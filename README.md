@@ -1,7 +1,7 @@
 Dremio Deployment Tool
 ====
 
-The unofficial script for deploying Dremio in IaaS deployments. This script enables administrators to deploy Dremio securely and efficiently to their cloud subscription. Dremio deployment tool fully deploys the infrastructure (if required) and Dremio to cloud-native Kubernetes. 
+The unofficial script for deploying Dremio in IaaS environments. This script enables administrators to deploy Dremio securely and efficiently to their cloud subscription. Dremio deployment tool fully deploys the infrastructure (if required) and Dremio to cloud-native Kubernetes. 
 
 The key features of this tool are:
 
@@ -31,8 +31,9 @@ The key features of this tool are:
 
 ## Setup
 1. Update dremio.config with relevant values for the following variables: 
-| Variable 	| Description 	| Required 	|
-|---	|---	|---	|
+
+| Variable  	| Description  | Required 	|
+|---	|:---	|	---|
 | DOCKER_USER 	| Docker Username used to access Dremio on Dockerhub 	| Yes 	|
 | DOCKER_PASSWD 	| Docker Password used to access Dremio on Dockerhub 	| Yes 	|
 | DOCKER_EMAIL 	| Docker Email used to access Dremio on Dockerhub 	| Yes 	|
