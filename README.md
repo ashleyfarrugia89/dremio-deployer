@@ -42,16 +42,20 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
 | DREMIO_CONF 	| Directory where the Dremio Helm chart is located 	| Yes 	|
 | TLS_PRIVATE_KEY_PATH 	| Location of the private key (only required when enabling TLS) 	| No 	|
 | TLS_CERT_PATH 	| Location of the TLS cert (only required when enabling TLS) 	| No 	|
-| AAD_GROUP_NAME 	|  	|  	|
 | AAD_CLIENT_ID 	| Azure Enterprise Application Client ID 	| Yes 	|
 | AAD_SECRET 	| Azure Enterprise Application Secret 	| Yes 	|
 | AAD_APP_NAME 	| Azure Enterprise Application Name 	| Yes 	|
 | AAD_TENANT_ID 	| Azure Tenant for the Enterprise Application 	| Yes 	|
 | AZURE_SUB_ID 	| Azure Subscription ID 	| Yes 	|
 | SSH_KEY 	| SSH Key for Dremio instances 	| Yes 	|
+| EXECUTOR_MEMORY 	| Memory allocated for the executor (default is 4GB) 	| No 	|
+| EXECUTOR_CPU 	| CPU allocated for the executor (default is 2) 	| No 	|
+| COORDINATOR_MEMORY 	| Memory allocated for the coordinator (default is 4GB) 	| No 	|
+| COORDINATOR_CPU 	| CPU allocated for the coordinator (default is 2) 	| No 	|
 
 2. If using <b>User</b> then Log into Azure using Azure CLI using ```az account set -s $AZURE_SUB_ID && az login``` and authenticate using the browser, otherwise skip this step.
 3. Deploy Azure Infrastructure and Dremio using ```sh ./deploy_dremio.sh```
 4. Confirm Deployment was successful using ```kubectl get pods```
 5. Check Dremio service is running using ```kubectl get svc``` and confirm it is running on your public IP address or a valid public IP address dependent on if the variable has been set.
-6. Finally, try to access Dremio using ```http(s)://{DREMIO_DNS}:9047```
+6. Add the PIP to your DNS Zone
+7. Finally, try to access Dremio using ```http(s)://{DREMIO_DNS}:9047```
