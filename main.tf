@@ -67,8 +67,8 @@ module "deploy_dremio_aks" {
   subnet                = module.deploy_network.subnet_id
   ssh_key               = var.ssh_key
   default_instance_name = var.default_instance_type
-  coord_instance_type   = "Standard_D8_v4"
-  exec_instance_type    = "Standard_D8_v4"
+  coord_instance_type   = var.coor_instance_type
+  exec_instance_type    = var.exec_instance_type
   pip_resource_group    = azurerm_resource_group.DREMIO_rg.id
   sp_client_id          = var.sp_client_id
   sp_secret             = var.sp_secret

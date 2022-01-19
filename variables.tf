@@ -24,11 +24,11 @@ variable "default_instance_type" {
 }
 variable "exec_instance_type" {
   type        = string
-  default     = "Standard_D2_v2"
+  default     = "Standard_D8_v4"
 }
 variable "coor_instance_type" {
   type        = string
-  default     = "Standard_D3_v2"
+  default     = "Standard_D8_v4"
 }
 variable "storage_account_tier"{
   type        = string

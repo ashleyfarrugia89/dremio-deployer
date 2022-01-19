@@ -47,11 +47,6 @@ output "host" {
   value = module.deploy_dremio_aks.host
 }
 
-/*output "primary_access_key" {
-  value = module.deploy_distributed_storage.access_key
-  sensitive = true
-}*/
-
 output "dremio_resource_group"{
   value = azurerm_resource_group.DREMIO_rg.name
 }
