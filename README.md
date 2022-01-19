@@ -39,7 +39,7 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
 | DOCKER_PASSWD 	| Docker Password used to access Dremio on Dockerhub 	| Yes 	|
 | DOCKER_EMAIL 	| Docker Email used to access Dremio on Dockerhub 	| Yes 	|
 | DREMIO_TF_DIR 	| Directory where the terraform script is located 	| Yes 	|
-| DREMIO_CONF 	| Directory where the Dremio Helm chart is located 	| Yes 	|
+| DREMIO_CONF 	| Directory where the Dremio Helm chart is located - downloaded from [dremio-cloud-tools](https://github.com/dremio/dremio-cloud-tools). 	| Yes 	|
 | TLS_PRIVATE_KEY_PATH 	| Location of the private key (only required when enabling TLS) 	| No 	|
 | TLS_CERT_PATH 	| Location of the TLS cert (only required when enabling TLS) 	| No 	|
 | AAD_CLIENT_ID 	| Azure Enterprise Application Client ID 	| Yes 	|
