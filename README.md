@@ -21,16 +21,17 @@ The key features of this tool are:
 - [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
 - [Kubernetes or KubeCTL](https://kubernetes.io/docs/tasks/tools/)
 
-## Permissions
+The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> permissions in your Azure subscription, or alternatively an <b>Enterprise Application (EA)</b> that has the following permissions.
 
-> If using Enterprise Application (EA) you will need to assign the required Azure permissions. If you are Owner of the subscription then please skip this step.
+## Permissions
+> If you are using an Enterprise Application you will need to assign the required Azure permissions below. If you are Owner of the subscription then please skip this step.
 
 - Assign Contributor role
-- Create custom role for dremio using create_custom_dremio_role.sh and assign to EA
+- Create custom role for Dremio using create_custom_dremio_role.sh and assign to EA
 - Assign Storage Blob Data Owner to EA
 
 ## Setup
-1. Update dremio.config with relevant values for the following variables: 
+1. Update dremio.config with relevant values for the following variables.
 
 | Variable  	| Description  | Required 	|
 |---	|:---	|	---|
@@ -47,10 +48,10 @@ The key features of this tool are:
 | AAD_APP_NAME 	| Azure Enterprise Application Name 	| Yes 	|
 | AAD_TENANT_ID 	| Azure Tenant for the Enterprise Application 	| Yes 	|
 | AZURE_SUB_ID 	| Azure Subscription ID 	| Yes 	|
-| DREMIO_DNS 	| DNS for Dremio Environment 	| No 	|
+| SSH_KEY 	| SSH Key for Dremio instances 	| Yes 	|
 
-2. Log into Azure using Azure CLI using either ```az account set -s $AZURE_SUB_ID && az login``` for User <br> or ```az login --service-principal -u $AAD_CLIENT_ID -p $AAD_SECRET --tenant $AAD_TENANT_ID``` for logging in using Service Principal
+2. If using <b>User</b> then Log into Azure using Azure CLI using ```az account set -s $AZURE_SUB_ID && az login``` and authenticate using the browser, otherwise skip this step.
 3. Deploy Azure Infrastructure and Dremio using ```sh ./deploy_dremio.sh```
 4. Confirm Deployment was successful using ```kubectl get pods```
 5. Check Dremio service is running using ```kubectl get svc``` and confirm it is running on your public IP address or a valid public IP address dependent on if the variable has been set.
-6. Finally try to access Dremio using ```http(s)://{DREMIO_DNS}:9047```
+6. Finally, try to access Dremio using ```http(s)://{DREMIO_DNS}:9047```

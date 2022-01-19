@@ -1,0 +1,17 @@
+{
+  "Name": "Dremio Custom Role (AJF)",
+  "IsCustom": true,
+  "Description": "Grants full access to manage all resources, including the ability to assign roles in Azure RBAC",
+  "Actions": [
+    "*",
+    "Microsoft.Authorization/roleAssignments/write",
+    "Microsoft.Authorization/roleAssignments/delete"
+  ],
+  "NotActions": [],
+  "DataActions": [],
+  "NotDataActions": [
+  ],
+  "AssignableScopes": [
+    "/subscriptions/{SUBSCRIPTION_ID}"
+  ]
+}
