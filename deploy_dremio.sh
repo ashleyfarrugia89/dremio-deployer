@@ -69,15 +69,23 @@ az role assignment create \
 	--role "Network Contributor" \
 	--scope /subscriptions/$AZURE_SUB_ID/resourceGroups/$NODE_RESOURCE_GROUP
 
+# check dremio resources are set if not set them
+exec_mem=${EXECUTOR_MEMORY:='4096'}
+exec_cpu=${EXECUTOR_CPU:='2'}
+coord_mem=${COORDINATOR_MEMORY:='4096'}
+coord_cpu=${COORDINATOR_CPU:='2'}
+zook_mem=${ZOOKEEPER_MEMORY:='1024'}
+zook_cpu=${ZOOKEEPER_CPU:='0.5'}
+
 # deploy dremio
 helm install "dremio" $DREMIO_CONF/dremio_v2 -f $DREMIO_CONF/dremio_v2/values.local.yaml \
 --set service.loadBalancerIP=$PIP_IP_ADDRESS \
---set executor.memory=$EXECUTOR_MEMORY \
---set executor.cpu=$EXECUTOR_CPU \
---set coordinator.memory=$COORDINATOR_MEMORY \
---set coordinator.cpu=$COORDINATOR_CPU \
---set zookeeper.memory=$ZOOKEEPER_MEMORY \
---set zookeeper.cpu=$ZOOKEEPER_CPU \
+--set executor.memory=$exec_mem \
+--set executor.cpu=$exec_cpu \
+--set coordinator.memory=$coord_mem \
+--set coordinator.cpu=$coord_cpu \
+--set zookeeper.memory=$zook_mem \
+--set zookeeper.cpu=$zook_cpu \
 --set service.annotations."service\.beta\.kubernetes\.io\/azure-load-balancer-resource-group"=$AKS_RESOURCE_GROUP \
 --set image="dremio/dremio-ee" \
 --set imageTag="19.2.0" \
