@@ -50,10 +50,12 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
 | AAD_TENANT_ID 	| Azure Tenant for the Enterprise Application 	| Yes 	|
 | AZURE_SUB_ID 	| Azure Subscription ID 	| Yes 	|
 | SSH_KEY 	| SSH Key for Dremio instances 	| Yes 	|
-| EXECUTOR_MEMORY 	| Memory allocated for the executor (default is 4GB) 	| No 	|
-| EXECUTOR_CPU 	| CPU allocated for the executor (default is 2) 	| No 	|
-| COORDINATOR_MEMORY 	| Memory allocated for the coordinator (default is 4GB) 	| No 	|
-| COORDINATOR_CPU 	| CPU allocated for the coordinator (default is 2) 	| No 	|
+| EXECUTOR_MEMORY 	| Memory allocated for the executor nodes (default is 4GB) 	| No 	|
+| EXECUTOR_CPU 	| CPU allocated for the executor nodes (default is 2) 	| No 	|
+| COORDINATOR_MEMORY 	| Memory allocated for the coordinator nodes (default is 4GB) 	| No 	|
+| COORDINATOR_CPU 	| CPU allocated for the coordinator nodes (default is 2) 	| No 	|
+| ZOOKEEPER_MEMORY 	| Memory allocated for the zookeeper nodes (default is 1GB) 	| No 	|
+| ZOOKEEPER_CPU 	| CPU allocated for the zookeeper nodes (default is 0.5) 	| No 	|
 
 2. If using <b>User</b> then Log into Azure using Azure CLI using ```az account set -s $AZURE_SUB_ID && az login``` and authenticate using the browser, otherwise skip this step.
 3. Deploy Azure Infrastructure and Dremio using ```sh ./deploy_dremio.sh```
