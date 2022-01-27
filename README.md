@@ -64,4 +64,4 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
 4. Confirm Deployment was successful using ```kubectl get pods```
 5. Check Dremio service is running using ```kubectl get svc``` and confirm it is running on your public IP address or a valid public IP address dependent on if the variable has been set.
 6. Add the PIP to your DNS Zone
-7. Finally, try to access Dremio using ```http(s)://{DREMIO_DNS}:9047```
+7. Finally, try to access Dremio using ```http(s)://{HOSTNAME}:9047```
