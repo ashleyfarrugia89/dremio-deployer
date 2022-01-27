@@ -57,7 +57,7 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
 | ZOOKEEPER_MEMORY 	| Memory allocated for the zookeeper nodes (default is 1GB) 	| No 	|
 | ZOOKEEPER_CPU 	| CPU allocated for the zookeeper nodes (default is 0.5) 	| No 	|
 | AZURE_SP 	| Determines if we are using user or Azure Service Principal to configure Dremio (default is false) 	| No 	|
-| REDIRECT_URL 	| Re-direct URL for SSO e.g., https://{HOSTNAME}:9047/sso 	| Yes 	|
+| REDIRECT_URL 	| Re-direct URL for SSO e.g., ```https://{HOSTNAME}:9047/sso``` 	| Yes 	|
 
 2. If using <b>User</b> then Log into Azure using Azure CLI using ```az account set -s $AZURE_SUB_ID && az login``` and authenticate using the browser, otherwise skip this step.
 3. Deploy Azure Infrastructure and Dremio using ```sh ./deploy_dremio.sh```
