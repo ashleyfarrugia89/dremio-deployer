@@ -58,3 +58,11 @@ output "dremio_static_ip"{
 output "dremio_static_ip_id"{
   value = module.deploy_network.pip_resource_group
 }
+
+output "dremio_storage_account"{
+  value = module.deploy_distributed_storage.storage_account
+}
+
+output "dremio_container"{
+  value = module.deploy_distributed_storage.dremio_container
+}

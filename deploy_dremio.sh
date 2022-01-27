@@ -39,6 +39,8 @@ export CLUSTER_NAME=$(terraform output -raw aks_cluster_name )
 export AKS_RESOURCE_GROUP=$(terraform output -raw dremio_resource_group )
 export NODE_RESOURCE_GROUP=$(terraform output -raw aks_node_pool_rg )
 export PIP_IP_ADDRESS=$(terraform output -raw dremio_static_ip)
+export STORAGE_ACCOUNT=$(terraform output -raw dremio_storage_account)
+export DREMIO_CONTAINER=$(terraform output -raw dremio_container)
 
 # check if it has failed to deploy Azure Infrastructure
 if [[ -z $CLUSTER_NAME ]]; then
@@ -77,8 +79,14 @@ coord_cpu=${COORDINATOR_CPU:='2'}
 zook_mem=${ZOOKEEPER_MEMORY:='1024'}
 zook_cpu=${ZOOKEEPER_CPU:='0.5'}
 
+# create core-site.xml
+python create_dremio_config.py core-site $STORAGE_ACCOUNT $AAD_CLIENT_ID $AAD_SECRET $AAD_TENANT_ID $DREMIO_CONF/dremio_v2
+
+# create azuread.json - required for Azure AD SSO
+python create_dremio_config.py azuread $AAD_CLIENT_ID $AAD_SECRET $REDIRECT_URL $AAD_TENANT_ID $DREMIO_CONF/dremio_v2
+
 # deploy dremio
-helm install "dremio" $DREMIO_CONF/dremio_v2 -f $DREMIO_CONF/dremio_v2/values.local.yaml \
+helm install "dremio" $DREMIO_CONF/dremio_v2 -f $DREMIO_CONF/dremio_v2/values.yaml \
 --set service.loadBalancerIP=$PIP_IP_ADDRESS \
 --set executor.memory=$exec_mem \
 --set executor.cpu=$exec_cpu \
@@ -89,4 +97,9 @@ helm install "dremio" $DREMIO_CONF/dremio_v2 -f $DREMIO_CONF/dremio_v2/values.lo
 --set service.annotations."service\.beta\.kubernetes\.io\/azure-load-balancer-resource-group"=$AKS_RESOURCE_GROUP \
 --set image="dremio/dremio-ee" \
 --set imageTag="19.2.0" \
---set imagePullSecrets.name="$DOCKER_SECRET_NAME"
+--set imagePullSecrets.name="$DOCKER_SECRET_NAME" \
+--set coordinator.web.tls.enabled="true" \
+--set coordinator.web.tls.secret=$DOCKER_TLS_CERT_SECRET_NAME \
+--set distStorage.type="azureStorage" \
+--set distStorage.azureStorage.filesystem=$DREMIO_CONTAINER \
+--set distStorage.azureStorage.path="/"

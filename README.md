@@ -9,7 +9,7 @@ The key features of this tool are:
 - **Effortless Deployment**: Deploys Dremio to Cloud-native Kubernetes with limited effort required from administrators.
 - **Flexible Configuration**: Enables administrators to interact with the script at different stages, depending on their environment setup.
 
-By default, this will deploy an AKS cluster comprising 1 coordinator, 3 executor (with the ability to scale up to 5), and 3 zookeeper nodes, where the instance types are Standard_D8_v4, Standard_D8_v4 and Standard_D2_v2 respectively - <i>Instance types and quantities can be changed by updating the main.tf file located within the modules/aks/ directory </i>. 
+By default, this will deploy an AKS cluster comprising 1 coordinator, 3 executor (with the ability to scale up to 5), and 3 zookeeper nodes, where the instance types are Standard_D8_v4, Standard_D8_v4 and Standard_D2_v2 respectively - instance types and quantities can be changed by updating the main.tf file located within the modules/aks/ directory. 
 
 ## Pre-requisites
 
@@ -56,6 +56,8 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
 | COORDINATOR_CPU 	| CPU allocated for the coordinator nodes (default is 2) 	| No 	|
 | ZOOKEEPER_MEMORY 	| Memory allocated for the zookeeper nodes (default is 1GB) 	| No 	|
 | ZOOKEEPER_CPU 	| CPU allocated for the zookeeper nodes (default is 0.5) 	| No 	|
+| AZURE_SP 	| Determines if we are using user or Azure Service Principal to configure Dremio (default is false) 	| No 	|
+| REDIRECT_URL 	| Re-direct URL for SSO e.g., https://{HOSTNAME}:9047/sso 	| Yes 	|
 
 2. If using <b>User</b> then Log into Azure using Azure CLI using ```az account set -s $AZURE_SUB_ID && az login``` and authenticate using the browser, otherwise skip this step.
 3. Deploy Azure Infrastructure and Dremio using ```sh ./deploy_dremio.sh```
