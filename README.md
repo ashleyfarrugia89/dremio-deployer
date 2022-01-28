@@ -9,7 +9,7 @@ The key features of this tool are:
 - **Effortless Deployment**: Deploys Dremio to Cloud-native Kubernetes with limited effort required from administrators.
 - **Flexible Configuration**: Enables administrators to interact with the script at different stages, depending on their environment setup.
 
-By default, this will deploy an AKS cluster comprising 1 coordinator, 3 executor (with the ability to scale up to 5), and 3 zookeeper nodes, where the instance types are Standard_D8_v4, Standard_D8_v4 and Standard_D2_v2 respectively - instance types and quantities can be changed by updating the main.tf file located within the modules/aks/ directory. 
+By default, this will deploy an AKS cluster comprising 1 coordinator, 1 executor (with the ability to scale up to 5), and 1 zookeeper node, where the instance types are Standard_D8_v4, Standard_D8_v4 and Standard_D2_v2 respectively - instance types and quantities can be changed by updating the variables.tf file in this directory. 
 
 ## Pre-requisites
 
