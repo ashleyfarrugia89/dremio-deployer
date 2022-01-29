@@ -26,14 +26,14 @@ By default, this will deploy an AKS cluster comprising 1 coordinator, 1 executor
 The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> permissions in your Azure subscription, or alternatively an <b>Enterprise Application (EA)</b> that has the following permissions.
 
 ## Permissions
-> If you are using an Enterprise Application you will need to assign the required Azure permissions below. If you are Owner of the subscription then please skip this step.
+> If you are using an Enterprise Application you will need to assign the required Azure permissions below.
 
-- Assign Contributor role
+- Assign Contributor role to the EA on your subscription
 - Create custom role for Dremio using create_custom_dremio_role.sh and assign to EA
-- Assign Storage Blob Data Owner to EA
 
 ## Setup
-1. Update dremio.config with relevant values for the following variables.
+1. Create ```dremiotfstorageaccount``` Azure Storage Account with a container named ```tfstate```. These are required to store the Terraform state. If you are Owner of the subscription then you will need to Assign ```Storage Blob Data Owner``` to your User on the ```dremiotfstorageaccount```, alternatively if you are using an Enterprise Application then you will need to assign ```Storage Blob Data Owner``` to your EA on the ```dremiotfstorageaccount```.
+2. Update dremio.config with relevant values for the following variables.
 
 | Variable  	| Description  | Required 	|
 |---	|:---	|	---|
@@ -59,9 +59,9 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
 | AZURE_SP 	| Determines if we are using user or Azure Service Principal to configure Dremio (default is false) 	| No 	|
 | REDIRECT_URL 	| Re-direct URL for SSO e.g., ```https://{HOSTNAME}:9047/sso``` 	| Yes 	|
 
-2. If using <b>User</b> then Log into Azure using Azure CLI using ```az account set -s $AZURE_SUB_ID && az login``` and authenticate using the browser, otherwise skip this step.
-3. Deploy Azure Infrastructure and Dremio using ```sh ./deploy_dremio.sh```
-4. Confirm Deployment was successful using ```kubectl get pods```
-5. Check Dremio service is running using ```kubectl get svc``` and confirm it is running on your public IP address or a valid public IP address dependent on if the variable has been set.
-6. Add the PIP to your DNS Zone
-7. Finally, try to access Dremio using ```http(s)://{HOSTNAME}:9047```
+3. If using <b>User</b> then Log into Azure using Azure CLI using ```az account set -s $AZURE_SUB_ID && az login``` and authenticate using the browser, otherwise skip this step.
+4. Deploy Azure Infrastructure and Dremio using ```sh ./deploy_dremio.sh```
+5. Confirm Deployment was successful using ```kubectl get pods```
+6. Check Dremio service is running using ```kubectl get svc``` and confirm it is running on your public IP address or a valid public IP address dependent on if the variable has been set.
+7. Add the PIP to your DNS Zone
+8. Finally, try to access Dremio using ```http(s)://{HOSTNAME}:9047```
