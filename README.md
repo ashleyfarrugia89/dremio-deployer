@@ -59,7 +59,7 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
 | AZURE_SP 	| Determines if we are using user or Azure Service Principal to configure Dremio (default is false) 	| No 	|
 | REDIRECT_URL 	| Re-direct URL for SSO e.g., ```https://{HOSTNAME}:9047/sso``` 	| Yes 	|
 
-3. If using <b>User</b> then Log into Azure using Azure CLI using ```az account set -s $AZURE_SUB_ID && az login``` and authenticate using the browser, otherwise skip this step.
+3. Create Enterprise Application in Azure and ensure that the Redirect URL of your App Registration matches the config property REDIRECT_URL inside dremio.config.
 4. Deploy Azure Infrastructure and Dremio using ```sh ./deploy_dremio.sh```
 5. Confirm Deployment was successful using ```kubectl get pods```
 6. Check Dremio service is running using ```kubectl get svc``` and confirm it is running on your public IP address or a valid public IP address dependent on if the variable has been set.
