@@ -44,7 +44,7 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
 - Create custom role for Dremio using create_custom_dremio_role.sh and assign to the Enterprise Application
 
 ## Setup
-1. Create ```dremiotfstorageaccount``` Azure Storage Account with a container named ```tfstate```. These are required to store the Terraform state. If you are Owner of the subscription then you will need to Assign ```Storage Blob Data Owner``` to your User on the ```dremiotfstorageaccount```, alternatively if you are using an Enterprise Application then you will need to assign ```Storage Blob Data Owner``` to your EA on the ```dremiotfstorageaccount```.
+1. Assign ```Storage Blob Data Owner``` to your User on the Storage account created in [Pre-requisites](##Pre-requisites), alternatively if you are using an Enterprise Application then you will need to assign ```Storage Blob Data Owner``` to your EA on the ```dremiotfstorageaccount```.
 2. Update dremio.config with relevant values for the following variables.
 
 | Variable  	| Description  | Required 	|
