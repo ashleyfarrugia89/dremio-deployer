@@ -23,7 +23,7 @@ By default, this will deploy an AKS cluster comprising 1 coordinator, 1 executor
         <li>Search for and click <b>Azure Storage</b></li>
         <li>Tick the checkbox at the side of user_impersonation and select add permissions.</li>
     </ol>
-    <img src="images/AADEA-AZStorage.png" width="100" height="20"/>
+    <img src="images/AADEA-AZStorage.png" width="200" height="50"/>
   </details>
 - Create an Azure storage account - this is required for Terraform state backup
 - Download Dremio Cloud tools from [dremio-cloud-tools](https://github.com/dremio/dremio-cloud-tools)
