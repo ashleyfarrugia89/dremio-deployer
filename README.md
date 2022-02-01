@@ -14,8 +14,19 @@ By default, this will deploy an AKS cluster comprising 1 coordinator, 1 executor
 ## Pre-requisites
 
 - Azure Subscription with owner privileges
-- Azure Enterprise Application
-- Azure storage account - this is required for Terraform state backup
+- Create an Azure Enterprise Application with:
+  <details>
+    <summary markdown="span">API Permissions set for User Impersonation on Azure Storage</summary>
+    <ol>
+        <li> Inside the Enterprise Application select <b>API Permissions</b></li>
+        <li>Select <b>Add Permission</b></li>
+        <li>Search for and click <b>Azure Storage</b></li>
+        <li>Tick the checkbox at the side of user_impersonation and select add permissions.</li>
+    </ol>
+    <img src="images/AADEA-AZStorage.png" width="100" height="20"/>
+  </details>
+- Create an Azure storage account - this is required for Terraform state backup
+- Download Dremio Cloud tools from [dremio-cloud-tools](https://github.com/dremio/dremio-cloud-tools)
 
 ## Software requirements
 - [Helm](https://helm.sh/)
@@ -26,10 +37,10 @@ By default, this will deploy an AKS cluster comprising 1 coordinator, 1 executor
 The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> permissions in your Azure subscription, or alternatively an <b>Enterprise Application (EA)</b> that has the following permissions.
 
 ## Permissions
-> If you are using an Enterprise Application you will need to assign the required Azure permissions below.
+> If you are using an Enterprise Application and it's Service Principal then you will need to assign the required Azure permissions below.
 
 - Assign Contributor role to the EA on your subscription
-- Create custom role for Dremio using create_custom_dremio_role.sh and assign to EA
+- Create custom role for Dremio using create_custom_dremio_role.sh and assign to the Enterprise Application
 
 ## Setup
 1. Create ```dremiotfstorageaccount``` Azure Storage Account with a container named ```tfstate```. These are required to store the Terraform state. If you are Owner of the subscription then you will need to Assign ```Storage Blob Data Owner``` to your User on the ```dremiotfstorageaccount```, alternatively if you are using an Enterprise Application then you will need to assign ```Storage Blob Data Owner``` to your EA on the ```dremiotfstorageaccount```.
@@ -41,7 +52,7 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
 | DOCKER_PASSWD 	| Docker Password used to access Dremio on Dockerhub 	| Yes 	|
 | DOCKER_EMAIL 	| Docker Email used to access Dremio on Dockerhub 	| Yes 	|
 | DREMIO_TF_DIR 	| Directory where the terraform script is located 	| Yes 	|
-| DREMIO_CONF 	| Directory where the Dremio Helm chart is located - downloaded from [dremio-cloud-tools](https://github.com/dremio/dremio-cloud-tools). 	| Yes 	|
+| DREMIO_CONF 	| Directory where the Dremio Helm chart is located - downloaded from [dremio-cloud-tools](https://github.com/dremio/dremio-cloud-tools). Within dremio-cloud-tools/charts/	| Yes 	|
 | TLS_PRIVATE_KEY_PATH 	| Location of the private key (only required when enabling TLS) 	| No 	|
 | TLS_CERT_PATH 	| Location of the TLS cert (only required when enabling TLS) 	| No 	|
 | AAD_CLIENT_ID 	| Azure Enterprise Application Client ID 	| Yes 	|
@@ -49,7 +60,7 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
 | AAD_APP_NAME 	| Azure Enterprise Application Name 	| Yes 	|
 | AAD_TENANT_ID 	| Azure Tenant for the Enterprise Application 	| Yes 	|
 | AZURE_SUB_ID 	| Azure Subscription ID 	| Yes 	|
-| SSH_KEY 	| SSH Key for Dremio instances 	| Yes 	|
+| SSH_KEY 	| SSH Key for Dremio instances - please see x for 	| Yes 	|
 | EXECUTOR_MEMORY 	| Memory allocated for the executor nodes (default is 4GB) 	| No 	|
 | EXECUTOR_CPU 	| CPU allocated for the executor nodes (default is 2) 	| No 	|
 | COORDINATOR_MEMORY 	| Memory allocated for the coordinator nodes (default is 4GB) 	| No 	|
@@ -59,7 +70,7 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
 | AZURE_SP 	| Determines if we are using user or Azure Service Principal to configure Dremio (default is false) 	| No 	|
 | REDIRECT_URL 	| Re-direct URL for SSO e.g., ```https://{HOSTNAME}:9047/sso``` 	| Yes 	|
 
-3. Create Enterprise Application in Azure and ensure that the Redirect URL of your App Registration matches the config property REDIRECT_URL inside dremio.config.
+3. Create Enterprise Application in Azure and ensure that the Redirect URL of your App Registration matches the config property ```REDIRECT_URL``` inside dremio.config.
 4. Deploy Azure Infrastructure and Dremio using ```sh ./deploy_dremio.sh```
 5. Confirm Deployment was successful using ```kubectl get pods```
 6. Check Dremio service is running using ```kubectl get svc``` and confirm it is running on your public IP address or a valid public IP address dependent on if the variable has been set.
