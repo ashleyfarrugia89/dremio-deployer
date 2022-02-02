@@ -37,7 +37,9 @@ variable "storage_account_tier"{
 variable "subnet_address_space"{
   default = "172.16.0.0/25"
 }
-variable "ssh_key" {}
+variable "ssh_key" {
+  default = null
+}
 variable "aad_group_id" {}
 variable "sp_client_id" {}
 variable "sp_secret" {}

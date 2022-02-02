@@ -90,7 +90,6 @@ Appendix
         <li> In the overview section you will see <b>Application (client) ID</b>. This is the client id required by the Dremio deployer.</li>
         <li> Copy this ID using the <b>Copy to clipboard</b> icon on the right of the id and paste this in your dremio.config file under the property <b>AAD_CLIENT_ID</b>.</li>
     </ol>
-    <br/>
 </details>
 
 ### Create a Secret
@@ -120,6 +119,7 @@ Appendix
         <li> Paste this in your dremio.config file under the property <b>AAD_TENANT_ID</b>.</li>
     </ol>
     <br/>
+    <img src="images/TenantId.jpg"/>
 </details>
 
 ### Locate my subscription id
@@ -132,7 +132,6 @@ Appendix
         <li> Select the subscription that you are planning to deploy Dremio to</li>
         <li> Under <b>Essentials</b> you will see your Subscription ID. Select the <b>Copy to clipboard</b> icon and paste it in your dremio.config file under the property <b>AZURE_SUB_ID</b>.</li>
     </ol>
-    <br/>
 </details>
 
 ### Set up Redirect URL
@@ -146,5 +145,4 @@ Appendix
         <li> Input the URL that you want to use for your Dremio instance, followed by /sso e.g., <i>https://{MY DOMAIN}/sso</i>.</li>
         <li> Select save. Now your Redirect URL should be setup for Dremio to authenticate your users using SSO.</li>
     </ol>
-    <br/>
 </details>
