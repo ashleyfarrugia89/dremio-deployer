@@ -5,22 +5,38 @@ source dremio.local.config
 # create functions for Dremio deployment
 function deploy_dremio_infra {
   # check if terraform has been initialised already
-  if [[ ! -d '.terraform' ]]; then
-    if [[ ! "$PWD" = $DREMIO_TF_DIR ]]; then
-      cd "$DREMIO_TF_DIR"
-    fi
-    terraform init -input=false -reconfigure
-  fi
+#  if [[ ! -d '.terraform' ]]; then
+#    if [[ ! "$PWD" = $DREMIO_TF_DIR ]]; then
+#      cd "$DREMIO_TF_DIR"
+#    fi
+#    terraform init -input=false -reconfigure
+#  fi
+  terraform init -input=false -reconfigure
 
-  # terraform deploy cluster
-  terraform apply -auto-approve \
-  -var "aad_group_id=$AAD_GROUP_NAME" \
-  -var "sp_client_id=$AAD_CLIENT_ID" \
-  -var "sp_secret=$AAD_SECRET" \
-  -var "application_name=$AAD_APP_NAME" \
-  -var "tenant_id=$AAD_TENANT_ID" \
-  -var "subscription_id=$AZURE_SUB_ID" \
-  -var "ssh_key=$SSH_KEY"
+  # update main.tf file with the storage account details
+  sed -i '' -e "s/dremiotfstorageaccount/$STORAGE_ACCOUNT/g" main.tf
+
+  # deploy cluster with ssh_key using terraform
+  if [[ $SSH_KEY ]]; then
+    echo "Deploying cluster with SSH_KEY"
+    terraform apply -auto-approve \
+    -var "aad_group_id=$AAD_GROUP_NAME" \
+    -var "sp_client_id=$AAD_CLIENT_ID" \
+    -var "sp_secret=$AAD_SECRET" \
+    -var "application_name=$AAD_APP_NAME" \
+    -var "tenant_id=$AAD_TENANT_ID" \
+    -var "subscription_id=$AZURE_SUB_ID" \
+    -var "ssh_key=$SSH_KEY"
+  else
+    echo "Deploying cluster without SSH_KEY"
+    terraform apply -auto-approve \
+    -var "aad_group_id=$AAD_GROUP_NAME" \
+    -var "sp_client_id=$AAD_CLIENT_ID" \
+    -var "sp_secret=$AAD_SECRET" \
+    -var "application_name=$AAD_APP_NAME" \
+    -var "tenant_id=$AAD_TENANT_ID" \
+    -var "subscription_id=$AZURE_SUB_ID"
+  fi
 
   # get terraform outputs to configure dremio
   export CLUSTER_NAME=$(terraform output -raw aks_cluster_name )
