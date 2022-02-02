@@ -69,14 +69,14 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
 | ZOOKEEPER_MEMORY 	| Memory allocated for the zookeeper nodes (default is 1GB) 	| No 	|
 | ZOOKEEPER_CPU 	| CPU allocated for the zookeeper nodes (default is 0.5) 	| No 	|
 | AZURE_SP 	| Determines if we are using user or Azure Service Principal to configure Dremio (default is false) 	| No 	|
-| REDIRECT_URL 	| Re-direct URL for SSO e.g., ```https://{HOSTNAME}:9047/sso``` (see [Set up Redirect URL](#set-up-redirect-url) for details on how to set this up)	| Yes 	|
+| REDIRECT_URL 	| Re-direct URL for SSO e.g., ```https://{HOSTNAME}/sso``` (see [Set up Redirect URL](#set-up-redirect-url) for details on how to set this up)	| Yes 	|
 
 3. Create Enterprise Application in Azure and ensure that the Redirect URL of your App Registration matches the config property ```REDIRECT_URL``` inside dremio.config.
 4. Deploy Azure Infrastructure and Dremio using ```sh ./deploy_dremio.sh```
 5. Confirm Deployment was successful using ```kubectl get pods```
 6. Check Dremio service is running using ```kubectl get svc``` and confirm it is running on your public IP address or a valid public IP address dependent on if the variable has been set.
 7. Add the PIP to your DNS Zone
-8. Finally, try to access Dremio using ```http(s)://{HOSTNAME}:9047```.
+8. Finally, try to access Dremio using ```http(s)://{HOSTNAME}```.
 
 Appendix
 ====
@@ -142,7 +142,7 @@ Appendix
         <li> Select the Enterprise Application name using Home->App Registrations</li>
         <li> In the menu on the left-hand side, select <b></b>Authentication</b>.</li>
         <li> Navigate to the box with the title <b>Web</b> and select <b>Add URI</b></li>
-        <li> Input the URL that you want to use for your Dremio instance, followed by /sso e.g., <i>https://{MY DOMAIN}/sso</i>.</li>
+        <li> Input the URL that you want to use for your Dremio instance, followed by /sso e.g., <i>https://{HOSTNAME}/sso</i>.</li>
         <li> Select save. Now your Redirect URL should be setup for Dremio to authenticate your users using SSO.</li>
     </ol>
 </details>
