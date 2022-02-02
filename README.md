@@ -76,9 +76,10 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
 5. Confirm Deployment was successful using ```kubectl get pods```
 6. Check Dremio service is running using ```kubectl get svc``` and confirm it is running on your public IP address or a valid public IP address dependent on if the variable has been set.
 7. Add the PIP to your DNS Zone
-8. Finally, try to access Dremio using ```http(s)://{HOSTNAME}:9047```
+8. Finally, try to access Dremio using ```http(s)://{HOSTNAME}:9047```.
 
 ##Appendix
+====
 
 ### Find my Azure client id
 <details>
@@ -142,8 +143,8 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
         <li> Select the Enterprise Application name using Home->App Registrations</li>
         <li> In the menu on the left-hand side, select <b></b>Authentication</b>.</li>
         <li> Navigate to the box with the title <b>Web</b> and select <b>Add URI</b></li>
-        <li> Input the URL that you want to use for your Dremio instance, followed by /sso e.g., https://{MY DOMAIN}/sso</li>
-        <li> Select save. Now your Redirect URL should be setup for Dremio to authenticate your users using SSO</li>
+        <li> Input the URL that you want to use for your Dremio instance, followed by /sso e.g., <i>https://{MY DOMAIN}/sso</i>.</li>
+        <li> Select save. Now your Redirect URL should be setup for Dremio to authenticate your users using SSO.</li>
     </ol>
     <br/>
 </details>
