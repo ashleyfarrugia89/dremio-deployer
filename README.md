@@ -56,11 +56,11 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
 | DREMIO_CONF 	| Directory where the Dremio Helm chart is located - downloaded from [dremio-cloud-tools](https://github.com/dremio/dremio-cloud-tools). Within the dremio-cloud-tools/charts/ sub-folder.	| Yes 	|
 | TLS_PRIVATE_KEY_PATH 	| Location of the private key (only required when enabling TLS) 	| No 	|
 | TLS_CERT_PATH 	| Location of the TLS cert (only required when enabling TLS) 	| No 	|
-| AAD_CLIENT_ID 	| Azure Enterprise Application Client ID (see [Find My Client ID](#findmyazureclientid)	| Yes 	|
-| AAD_SECRET 	| Azure Enterprise Application Secret 	| Yes 	|
+| AAD_CLIENT_ID 	| Azure Enterprise Application Client ID (see [Find My Client ID](#find-my-azure-client-id) for details)	| Yes 	|
+| AAD_SECRET 	| Azure Enterprise Application Secret (see [Create a secret](#create-a-secret) for details) 	| Yes 	|
 | AAD_APP_NAME 	| Azure Enterprise Application Name 	| Yes 	|
-| AAD_TENANT_ID 	| Azure Tenant for the Enterprise Application 	| Yes 	|
-| AZURE_SUB_ID 	| Azure Subscription ID 	| Yes 	|
+| AAD_TENANT_ID 	| Azure Tenant for the Enterprise Application (see [Locate my Tenant ID](#locate-my-tenant-id) for details) 	| Yes 	|
+| AZURE_SUB_ID 	| Azure Subscription ID (see [Locate my Subscriptions ID](#locate-my-subscription-id) for details)	| Yes 	|
 | SSH_KEY 	| SSH Key for Dremio instances - please see x for 	| Yes 	|
 | EXECUTOR_MEMORY 	| Memory allocated for the executor nodes (default is 4GB) 	| No 	|
 | EXECUTOR_CPU 	| CPU allocated for the executor nodes (default is 2) 	| No 	|
@@ -69,7 +69,7 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
 | ZOOKEEPER_MEMORY 	| Memory allocated for the zookeeper nodes (default is 1GB) 	| No 	|
 | ZOOKEEPER_CPU 	| CPU allocated for the zookeeper nodes (default is 0.5) 	| No 	|
 | AZURE_SP 	| Determines if we are using user or Azure Service Principal to configure Dremio (default is false) 	| No 	|
-| REDIRECT_URL 	| Re-direct URL for SSO e.g., ```https://{HOSTNAME}:9047/sso``` 	| Yes 	|
+| REDIRECT_URL 	| Re-direct URL for SSO e.g., ```https://{HOSTNAME}:9047/sso``` (see [Set up Redirect URL](#set-up-redirect-url) for details on how to set this up)	| Yes 	|
 
 3. Create Enterprise Application in Azure and ensure that the Redirect URL of your App Registration matches the config property ```REDIRECT_URL``` inside dremio.config.
 4. Deploy Azure Infrastructure and Dremio using ```sh ./deploy_dremio.sh```
@@ -78,30 +78,72 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
 7. Add the PIP to your DNS Zone
 8. Finally, try to access Dremio using ```http(s)://{HOSTNAME}:9047```
 
-Appendix
+#Appendix
 
 ## Find my Azure client id
 <details>
   <summary markdown="span">To find your Enterprise application Client ID please see below.</summary>
+    <br/>
     <ol>
         <li> Select the Enterprise Application name using Home->App Registrations</li>
-        <li> In the overview section you will see <b>Application (client) ID</b> this is the client id required by the Dremio deployer.</li>
-        <li> Copy this ID using the <b>Copy to clipboard</b> icon on the right of the id</li>
-        <li> Paste this in your dremio.config file under the property <b>AAD_CLIENT_ID</b></li>
+        <li> In the overview section you will see <b>Application (client) ID</b>. This is the client id required by the Dremio deployer.</li>
+        <li> Copy this ID using the <b>Copy to clipboard</b> icon on the right of the id and paste this in your dremio.config file under the property <b>AAD_CLIENT_ID</b>.</li>
     </ol>
     <br/>
 </details>
 
-This section can be used to find my azure client id
+## Create a Secret
+<details>
+  <summary markdown="span">To create a secret for your Enterprise application please see below.</summary>
+    <br/>
+    <ol>
+        <li> Select the Enterprise Application name using Home->App Registrations</li>
+        <li> In the menu on the left-hand side, select <b>Certificates & secrets</b></li>
+        <li> Click the + icon next to <b>New client secret</b>. This will open up a menu whereby you can set the secret name and expiration time.</li>
+        <li> Once you have input your details then just select <b>Add</b>. This will create a secret for your Enterprise Application and add it to the list of secrets see below.</li>
+        <li> Locate the new secret and select the <b>Copy to clipboard</b> icon to the right of the Value field in the table. <i>Note this value will only be available for this session, so make sure you store it in a safe location.</i></li>
+        <li> Paste it in your dremio.config file under the property <b>AAD_SECRET</b></li>
+    </ol>
+    <br/>
+    <img src="images/AzureSecret.jpg"/>
+</details>
 
+## Locate my tenant id
+<details>
+  <summary markdown="span">To find your Tenant ID please see below.</summary>
+    <br/>
+    <ol>
+        <li> Select <b>Azure Active Directory</b> under Azure services</li>
+        <li> Select <b>Properties</b></li>
+        <li> Then, scroll down to the <b>Tenant ID</b> field, and select the <b>Copy to clipboard</b> icon to the right of the value in the box</li>
+        <li> Paste this in your dremio.config file under the property <b>AAD_TENANT_ID</b>.</li>
+    </ol>
+    <br/>
+</details>
 
-## Create Azure Enterprise Application secret
-This section can used to create an AAD EA secret
+## Locate my subscription id
+<details>
+  <summary markdown="span">To find your Subscription ID please see below.</summary>
+    <br/>
+    <ol>
+        <li> Navigate to Home by clicking the <b>Microsoft Azure</b> icon at the top left-hand side of the screen</li>
+        <li> Select <b>Subscriptions</b> under Azure Services. Alternatively, search for <b>Subscriptions</b> in the search bar at the top of the screen.</li>
+        <li> Select the subscription that you are planning to deploy Dremio to</li>
+        <li> Under <b>Essentials</b> you will see your Subscription ID. Select the <b>Copy to clipboard</b> icon and paste it in your dremio.config file under the property <b>AZURE_SUB_ID</b>.</li>
+    </ol>
+    <br/>
+</details>
 
-## Find my tenant id
-This section can be used to locate my tenant id
-
-## Find my subscription id
-This section can be used to locate my subscription id
-
-## How do I set my redirect URL?
+## Set up Redirect URL
+<details>
+  <summary markdown="span">To setup your Enterprise Application Redirect URL please see below.</summary>
+    <br/>
+    <ol>
+        <li> Select the Enterprise Application name using Home->App Registrations</li>
+        <li> In the menu on the left-hand side, select <b></b>Authentication</b>.</li>
+        <li> Navigate to the box with the title <b>Web</b> and select <b>Add URI</b></li>
+        <li> Input the URL that you want to use for your Dremio instance, followed by /sso e.g., https://{MY DOMAIN}/sso</li>
+        <li> Select save. Now your Redirect URL should be setup for Dremio to authenticate your users using SSO</li>
+    </ol>
+    <br/>
+</details>
