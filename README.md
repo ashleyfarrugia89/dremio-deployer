@@ -11,7 +11,7 @@ The key features of this tool are:
 
 By default, this will deploy an AKS cluster comprising 1 coordinator, 1 executor (with the ability to scale up to 5), and 1 zookeeper node, where the instance types are Standard_D8_v4, Standard_D8_v4 and Standard_D2_v2 respectively - instance types and quantities can be changed by updating the variables.tf file in this directory. 
 
-## Pre-requisites
+## Pre-requisite
 
 - Azure Subscription with owner privileges
 - Create an Azure Enterprise Application with:
@@ -24,7 +24,7 @@ By default, this will deploy an AKS cluster comprising 1 coordinator, 1 executor
         <li>Tick the checkbox at the side of user_impersonation and select add permissions.</li>
     </ol>
     <br/>
-    <img src="images/AzureStorage.jpg" width="700" height="300"/>
+    <img src="images/AzureStorage.jpg" width="800" height="400"/>
   </details>
 - Create an Azure storage account - this is required for Terraform state backup
 - Download Dremio Cloud tools from [dremio-cloud-tools](https://github.com/dremio/dremio-cloud-tools)
@@ -44,7 +44,7 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
 - Create custom role for Dremio using create_custom_dremio_role.sh and assign to the Enterprise Application
 
 ## Setup
-1. Assign ```Storage Blob Data Owner``` to your User on the Storage account created in [Pre-Requisites](#pre-requisites), alternatively if you are using an Enterprise Application then you will need to assign ```Storage Blob Data Owner``` to your EA on the ```dremiotfstorageaccount```.
+1. Assign ```Storage Blob Data Owner``` to your User on the Storage account created in [Pre-Requisites](#pre-requisite), alternatively if you are using an Enterprise Application then you will need to assign it to your EA.
 2. Update dremio.config with relevant values for the following variables.
 
 | Variable  	| Description  | Required 	|
