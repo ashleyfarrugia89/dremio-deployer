@@ -38,7 +38,7 @@ variable "subnet_address_space"{
   default = "172.16.0.0/25"
 }
 variable "ssh_key" {
-  default = null
+  default = ""
 }
 variable "aad_group_id" {}
 variable "sp_client_id" {}
