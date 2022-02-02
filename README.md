@@ -78,9 +78,9 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
 7. Add the PIP to your DNS Zone
 8. Finally, try to access Dremio using ```http(s)://{HOSTNAME}:9047```
 
-#Appendix
+##Appendix
 
-## Find my Azure client id
+### Find my Azure client id
 <details>
   <summary markdown="span">To find your Enterprise application Client ID please see below.</summary>
     <br/>
@@ -92,7 +92,7 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
     <br/>
 </details>
 
-## Create a Secret
+### Create a Secret
 <details>
   <summary markdown="span">To create a secret for your Enterprise application please see below.</summary>
     <br/>
@@ -108,7 +108,7 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
     <img src="images/AzureSecret.jpg"/>
 </details>
 
-## Locate my tenant id
+### Locate my tenant id
 <details>
   <summary markdown="span">To find your Tenant ID please see below.</summary>
     <br/>
@@ -121,7 +121,7 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
     <br/>
 </details>
 
-## Locate my subscription id
+### Locate my subscription id
 <details>
   <summary markdown="span">To find your Subscription ID please see below.</summary>
     <br/>
@@ -134,7 +134,7 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
     <br/>
 </details>
 
-## Set up Redirect URL
+### Set up Redirect URL
 <details>
   <summary markdown="span">To setup your Enterprise Application Redirect URL please see below.</summary>
     <br/>
