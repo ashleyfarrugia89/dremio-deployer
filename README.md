@@ -14,7 +14,8 @@ By default, this will deploy an AKS cluster comprising 1 coordinator, 1 executor
 ## Pre-requisite
 
 - Azure Subscription with owner privileges
-- Create an Azure Enterprise Application with:
+- Create an Azure storage account (see [Create a storage account](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) for details) - this is required for Terraform state backup.
+- Create an Azure Enterprise Application (EA) with:
   <details>
     <summary markdown="span">API Permissions set for User Impersonation on Azure Storage</summary>
     <ol>
@@ -26,7 +27,6 @@ By default, this will deploy an AKS cluster comprising 1 coordinator, 1 executor
     <br/>
     <img src="images/AzureStorage.jpg" width="800" height="400"/>
   </details>
-- Create an Azure storage account - this is required for Terraform state backup
 - Download Dremio Cloud tools from [dremio-cloud-tools](https://github.com/dremio/dremio-cloud-tools)
 
 ## Software requirements
@@ -38,13 +38,13 @@ By default, this will deploy an AKS cluster comprising 1 coordinator, 1 executor
 The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> permissions in your Azure subscription, or alternatively an <b>Enterprise Application (EA)</b> that has the following permissions.
 
 ## Permissions
-> If you are using an Enterprise Application and it's Service Principal then you will need to assign the required Azure permissions below.
+> If you are using an Enterprise Application and it's Service Principal then you will need to assign the required Azure permissions below. Otherwise, skip this section.
 
 - Assign Contributor role to the EA on your subscription
 - Create custom role for Dremio using create_custom_dremio_role.sh and assign to the Enterprise Application
 
 ## Setup
-1. Assign ```Storage Blob Data Owner``` to your User on the Storage account created in [Pre-Requisites](#pre-requisite), alternatively if you are using an Enterprise Application then you will need to assign it to your EA.
+1. Assign ```Storage Blob Data Owner``` to your User on the Storage account created in [Pre-Requisites](#pre-requisite), alternatively if you are using an Enterprise Application then you will need to assign it this.
 2. Update dremio.config with relevant values for the following variables.
 
 | Variable  	| Description  | Required 	|
@@ -52,11 +52,11 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
 | DOCKER_USER 	| Docker Username used to access Dremio on Dockerhub 	| Yes 	|
 | DOCKER_PASSWD 	| Docker Password used to access Dremio on Dockerhub 	| Yes 	|
 | DOCKER_EMAIL 	| Docker Email used to access Dremio on Dockerhub 	| Yes 	|
-| DREMIO_TF_DIR 	| Directory where the terraform script is located 	| Yes 	|
-| DREMIO_CONF 	| Directory where the Dremio Helm chart is located - downloaded from [dremio-cloud-tools](https://github.com/dremio/dremio-cloud-tools). Within dremio-cloud-tools/charts/	| Yes 	|
+| DREMIO_TF_DIR 	| Directory where this terraform folder is located 	| Yes 	|
+| DREMIO_CONF 	| Directory where the Dremio Helm chart is located - downloaded from [dremio-cloud-tools](https://github.com/dremio/dremio-cloud-tools). Within the dremio-cloud-tools/charts/ sub-folder.	| Yes 	|
 | TLS_PRIVATE_KEY_PATH 	| Location of the private key (only required when enabling TLS) 	| No 	|
 | TLS_CERT_PATH 	| Location of the TLS cert (only required when enabling TLS) 	| No 	|
-| AAD_CLIENT_ID 	| Azure Enterprise Application Client ID 	| Yes 	|
+| AAD_CLIENT_ID 	| Azure Enterprise Application Client ID (see [Find My Client ID](#findmyazureclientid)	| Yes 	|
 | AAD_SECRET 	| Azure Enterprise Application Secret 	| Yes 	|
 | AAD_APP_NAME 	| Azure Enterprise Application Name 	| Yes 	|
 | AAD_TENANT_ID 	| Azure Tenant for the Enterprise Application 	| Yes 	|
@@ -77,3 +77,31 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
 6. Check Dremio service is running using ```kubectl get svc``` and confirm it is running on your public IP address or a valid public IP address dependent on if the variable has been set.
 7. Add the PIP to your DNS Zone
 8. Finally, try to access Dremio using ```http(s)://{HOSTNAME}:9047```
+
+Appendix
+
+## Find my Azure client id
+<details>
+  <summary markdown="span">To find your Enterprise application Client ID please see below.</summary>
+    <ol>
+        <li> Select the Enterprise Application name using Home->App Registrations</li>
+        <li> In the overview section you will see <b>Application (client) ID</b> this is the client id required by the Dremio deployer.</li>
+        <li> Copy this ID using the <b>Copy to clipboard</b> icon on the right of the id</li>
+        <li> Paste this in your dremio.config file under the property <b>AAD_CLIENT_ID</b></li>
+    </ol>
+    <br/>
+</details>
+
+This section can be used to find my azure client id
+
+
+## Create Azure Enterprise Application secret
+This section can used to create an AAD EA secret
+
+## Find my tenant id
+This section can be used to locate my tenant id
+
+## Find my subscription id
+This section can be used to locate my subscription id
+
+## How do I set my redirect URL?
