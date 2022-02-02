@@ -105,7 +105,7 @@ Appendix
         <li> Paste it in your dremio.config file under the property <b>AAD_SECRET</b></li>
     </ol>
     <br/>
-    <img src="images/AzureSecret.jpg"/>
+    <img src="images/AzureSecret.png"/>
 </details>
 
 ### Locate my tenant id
