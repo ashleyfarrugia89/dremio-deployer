@@ -78,7 +78,7 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
 7. Add the PIP to your DNS Zone
 8. Finally, try to access Dremio using ```http(s)://{HOSTNAME}:9047```.
 
-##Appendix
+Appendix
 ====
 
 ### Find my Azure client id
