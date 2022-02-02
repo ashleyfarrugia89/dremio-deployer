@@ -5,13 +5,12 @@ source dremio.local.config
 # create functions for Dremio deployment
 function deploy_dremio_infra {
   # check if terraform has been initialised already
-#  if [[ ! -d '.terraform' ]]; then
-#    if [[ ! "$PWD" = $DREMIO_TF_DIR ]]; then
-#      cd "$DREMIO_TF_DIR"
-#    fi
-#    terraform init -input=false -reconfigure
-#  fi
-  terraform init -input=false -reconfigure
+  if [[ ! -d '.terraform' ]]; then
+    if [[ ! "$PWD" = $DREMIO_TF_DIR ]]; then
+      cd "$DREMIO_TF_DIR"
+    fi
+    terraform init -input=false -reconfigure
+  fi
 
   # update main.tf file with the storage account details
   sed -i '' -e "s/dremiotfstorageaccount/$STORAGE_ACCOUNT/g" main.tf
