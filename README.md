@@ -102,10 +102,11 @@ In order to partially install Dremio, this is typically for environments whereby
 <br />
 <details>
   <summary markdown="span">Deploy Dremio inside your own Azure Resource Group</summary>
+  <br />
   <ol>
     <li>Locate the resource group that you want to deploy Dremio within and ensure that your user has contibutor privileges on this resource group</li>
-    <li>Change the variable <b>AZURE_RESOURCE_GROUP</b> in dremio.config to your resource group.</li>
-    <li>Input respective values for the following variables inside dremio.config as well as the required variables inside  <b>AZURE_RESOURCE_GROUP</b>, <b>STORAGE_ACCOUNT</b>, <b>DREMIO_CONTAINER</b>, <b>ENV_PREFIX</b></li>
+    <li>Change the variable <code>AZURE_RESOURCE_GROUP</code> in dremio.config to your resource group.</li>
+    <li>Input respective values for the following variables inside dremio.config as well as the required variables inside <a href="#complete-install">Complete Install</a> <code>STORAGE_ACCOUNT, DREMIO_CONTAINER, ENV_PREFIX</code></li>
     <li>Execute deploy_dremio.sh</li>
   </ol>
   This will begin installation of the AKS Cluster and required resources for Dremio in your chosen resource group.
@@ -113,6 +114,7 @@ In order to partially install Dremio, this is typically for environments whereby
 <br/>
 <details>
   <summary markdown="span">Deploy Dremio inside your own AKS Cluster</summary>
+  <br />
   Deploying inside your own environment has some requirements. These requirements are:
   <ol>
     <li><b>Owner</b> Privileges of the subscription</li>
@@ -120,6 +122,7 @@ In order to partially install Dremio, this is typically for environments whereby
     <li>Create Azure Storage account that is accessible from the Enterprise Application (see <a href="#pre-requisite">Pre-requisite</a> for details).</li>
     <li>Create and configure an Azure Public IP Address and Associated DNS Zone - required for SSO.</li>
   </ol>
+  <br />
   Once you have satisfied the requirements above, then you can follow the steps below to deploy Dremio inside your own environment. Note that when we decommission/destroy the Dremio infrastructure this resource group will be protected and thus not deleted as part of the process.
   <ol>
     <li>Input respective values for the following variables inside dremio.config <b>CLUSTER_NAME</b>, <b>AKS_RESOURCE_GROUP</b>, <b>NODE_RESOURCE_GROUP</b>, <b>PIP_IP_ADDRESS</b>, <b>STORAGE_ACCOUNT</b> and <b>DREMIO_CONTAINER</b></li>
