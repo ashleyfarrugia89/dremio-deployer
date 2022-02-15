@@ -97,7 +97,7 @@ This script has flexible configuration, that is, it allows system administrators
 7. Add the PIP to your DNS Zone (refer to [Configure DNS](https://docs.microsoft.com/en-us/azure/dns/tutorial-alias-pip) for details.)
 8. Finally, try to access Dremio using ```http(s)://{HOSTNAME}```.
 
-##Partial Install
+## Partial Install
 
 In order to partially install Dremio, this is typically for environments whereby AKS or some elements of the Azure Infrastructure has already been deployed. So far, this script only supports if you have provided your own resource group or AKS cluster. If this is applicable to your requirements then please follow the guide below.
 <br />
@@ -126,7 +126,7 @@ In order to partially install Dremio, this is typically for environments whereby
   Once you have satisfied the requirements above, then you can follow the steps below to deploy Dremio inside your own environment. Note that when we decommission/destroy the Dremio infrastructure this resource group will be protected and thus not deleted as part of the process.
   <ol>
     <li>Input respective values for the following variables inside dremio.config as well as the required variables inside <a href="#complete-install">Complete Install</a> <code>CLUSTER_NAME, AKS_RESOURCE_GROUP, NODE_RESOURCE_GROUP, PIP_IP_ADDRESS, STORAGE_ACCOUNT, DREMIO_CONTAINER</code></li>
-    <li>Execute deploy_dremio.sh and skip the first step by typing in <br>3</b> when prompted.</li>
+    <li>Execute deploy_dremio.sh and skip the first step by typing in <code>3</code> when prompted., and then inputting <code>2</code> as per a usual Dremio install</li>
   </ol>
   This will deploy Dremio to your own Azure environment.
 </details>
