@@ -11,7 +11,7 @@ The key features of this tool are:
 
 By default, this will deploy an AKS cluster comprising 1 coordinator, 3 executor nodes (with the ability to scale up to 5), and 3 zookeeper nodes, where the instance types are Standard_D8_v4, Standard_D8_v4 and Standard_D2_v2 respectively - instance types can be changed by updating the variables.tf file in this directory. The quantities of nodes can be changed by setting COORDINATOR_NODES, EXECUTOR_NODES, ZOOKEEPER_NODES respectively variables inside dremio.conf.
 
-<img src="images/ADAKS.drawio.png" width="800" height="600"/>
+<img src="images/ADAKS.drawio.png" width="800" height="500"/>
 ## Pre-requisite
 
 - Azure Subscription with owner privileges
