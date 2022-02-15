@@ -9,8 +9,8 @@ The key features of this tool are:
 - **Effortless Deployment**: Deploys Dremio to Cloud-native Kubernetes with limited effort required from administrators.
 - **Flexible Configuration**: Enables administrators to interact with the script at different stages, depending on their environment setup.
 
-By default, this will deploy an AKS cluster comprising 1 coordinator, 1 executor (with the ability to scale up to 5), and 1 zookeeper node, where the instance types are Standard_D8_v4, Standard_D8_v4 and Standard_D2_v2 respectively - instance types and quantities can be changed by updating the variables.tf file in this directory. 
-
+By default, this will deploy an AKS cluster comprising 1 coordinator, 3 executor nodes (with the ability to scale up to 5), and 3 zookeeper nodes, where the instance types are Standard_D8_v4, Standard_D8_v4 and Standard_D2_v2 respectively - instance types can be changed by updating the variables.tf file in this directory. The quantities of nodes can be changed by setting COORDINATOR_NODES, EXECUTOR_NODES, ZOOKEEPER_NODES respectively variables inside dremio.conf.
+<img src="images/ADAKS.drewio.png" width="800" height="400"/>
 ## Pre-requisite
 
 - Azure Subscription with owner privileges
@@ -43,8 +43,10 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
 - Assign Contributor role to the EA on your subscription
 - Create custom role for Dremio using create_custom_dremio_role.sh and assign to the Enterprise Application
 
-## Setup
-1. Assign ```Storage Blob Data Owner``` to your User on the Storage account created in [Pre-Requisite](#pre-requisite), alternatively if you are using an Enterprise Application then you will need to assign it this.
+## Complete install
+This script has flexible configuration, that is, it allows system administrators to interact with it at any stage of the process for deploying Dremio. The setup guide below is for a full deployment, if you want to deploy Dremio inside your own Azure Infrastructure then please see [Deploy with exiting infrastructure](#partial-install) for details.
+<br/>
+1. Assign ```Storage Blob Data Owner``` to your User on the Storage account created in [Pre-requisite](#pre-requisite), alternatively if you are using an Enterprise Application then you will need to assign it this.
 2. Create a copy of dremio.config and rename it as dremio.local.config, and populate it with relevant values for the following variables.
 
 | Variable  	| Description  | Required 	|
@@ -64,12 +66,21 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
 | SSH_KEY 	| SSH Key for Dremio instances - please see x for 	| Yes 	|
 | EXECUTOR_MEMORY 	| Memory allocated for the executor nodes (default is 4GB) 	| No 	|
 | EXECUTOR_CPU 	| CPU allocated for the executor nodes (default is 2) 	| No 	|
+| EXECUTOR_NODES 	| Quantity of Executor nodes (default is 3)	| No 	|
 | COORDINATOR_MEMORY 	| Memory allocated for the coordinator nodes (default is 4GB) 	| No 	|
 | COORDINATOR_CPU 	| CPU allocated for the coordinator nodes (default is 2) 	| No 	|
+| COORDINATOR_NODES	| Quantity of Coordinator  nodes (default is 1) 	| No 	|
 | ZOOKEEPER_MEMORY 	| Memory allocated for the zookeeper nodes (default is 1GB) 	| No 	|
 | ZOOKEEPER_CPU 	| CPU allocated for the zookeeper nodes (default is 0.5) 	| No 	|
+| ZOOKEEPER_NODES	| Quantity of Zookeeper  nodes (default is 3)  	| No 	|
 | AZURE_SP 	| Determines if we are using user or Azure Service Principal to configure Dremio (default is false) 	| No 	|
 | REDIRECT_URL 	| Re-direct URL for SSO e.g., ```https://{HOSTNAME}/sso``` (see [Set up Redirect URL](#set-up-redirect-url) for details on how to set this up)	| Yes 	|
+| TF_STORAGE_ACCOUNT 	| Name of the storage account that was created in [Pre-Requisite](#pre-requisite)	| Yes 	|
+| ENV_PREFIX 	| Prefix for the Dremio deployment. This will be the prefix given to all resources deployed inside your Azure subscription associated with Dremio.	| No 	|
+| DREMIO_STORAGE_ACCOUNT 	| Name of the storage account for Dremio distributed storage (default value is dremiostorageaccount)	| No 	|
+| AZURE_RESOURCE_GROUP 	| Name of the resource group for Dremio to be deployed within. If this is not set and the {$ENV_PREFIX} variable has been set then it will be deployed into a resource group called <b>{ENVIRONMENT_PREFIX}_rg</b>, if not then it will be called <b>DREMIO_PROD_rg</b>. If this value is set and the resource group already exists then Dremio will deploy into this resource group (see [Deploy with exiting infrastructure](#partial-install) for details).	| No 	|
+| DREMIO_IMG 	| Dremio Docker Image that will be installed this can be dremio/dremio-oss for CE deployments or dremio/dremio-ee for EE deployments. Note EE deployments required Dockerhub access. So you will need to speak to your Account Executive or Solutions Architect to set this up.	(Default value is dremio/dremio-oss)| No 	|
+| DREMIO_VERSION 	| Version of Dremio to be deployed inside your environment (default value is latest).	| No 	|
 
 3. Create Enterprise Application in Azure and ensure that the Redirect URL of your App Registration matches the config property ```REDIRECT_URL``` inside dremio.config.
 4. Deploy Azure Infrastructure and Dremio using ```sh ./deploy_dremio.sh```
@@ -77,6 +88,37 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
 6. Check Dremio service is running using ```kubectl get svc``` and confirm it is running on your public IP address or a valid public IP address dependent on if the variable has been set.
 7. Add the PIP to your DNS Zone
 8. Finally, try to access Dremio using ```http(s)://{HOSTNAME}```.
+
+##Partial Install
+In order to partially install Dremio, this is typically for environments whereby AKS or some elements of the Azure Infrastructure has already been deployed. So far, this script only supports if you have provided your own resource group or AKS cluster. If this is applicable to your requirements then please follow the guide below.
+<br />
+<details>
+  <summary markdown="span">Deploy Dremio inside your own Azure Resource Group</summary>
+  <ol>
+    <li>Locate the resource group that you want to deploy Dremio within and ensure that your user has contibutor privileges on this resource group</li>
+    <li>Change the variable <b>AZURE_RESOURCE_GROUP</b> in dremio.config to your resource group.</li>
+    <li>Input respective values for the following variables inside dremio.config as well as the required variables inside  <b>AZURE_RESOURCE_GROUP</b>, <b>STORAGE_ACCOUNT</b>, <b>DREMIO_CONTAINER</b>, <b>ENV_PREFIX</b></li>
+    <li>Execute deploy_dremio.sh</li>
+  </ol>
+  This will begin installation of the AKS Cluster and required resources for Dremio in your chosen resource group.
+</details>
+<br/>
+<details>
+  <summary markdown="span">Deploy Dremio inside your own AKS Cluster</summary>
+  Deploying inside your own environment has some requirements. These requirements are:
+  <ol>
+    <li><b>Owner</b> Privileges of the subscription</li>
+    <li>Assign Network Contributor role for your Enterprise Application on your Node Resource Group. The Node Resource Group is typically prefixed inside Azure with MC_.</li>
+    <li>Create Azure Storage account that is accessible from the Enterprise Application (see <a href="#pre-requisite">Pre-requisite</a> for details).</li>
+    <li>Create and configure an Azure Public IP Address and Associated DNS Zone - required for SSO.</li>
+  </ol>
+  Once you have satisfied the requirements above, then you can follow the steps below to deploy Dremio inside your own environment. Note that when we decommission/destroy the Dremio infrastructure this resource group will be protected and thus not deleted as part of the process.
+  <ol>
+    <li>Input respective values for the following variables inside dremio.config <b>CLUSTER_NAME</b>, <b>AKS_RESOURCE_GROUP</b>, <b>NODE_RESOURCE_GROUP</b>, <b>PIP_IP_ADDRESS</b>, <b>STORAGE_ACCOUNT</b> and <b>DREMIO_CONTAINER</b></li>
+    <li>Execute deploy_dremio.sh and skip the first step by typing in <br>3</b> when prompted.</li>
+  </ol>
+  This will deploy Dremio to your own Azure environment.
+</details>
 
 Appendix
 ====
