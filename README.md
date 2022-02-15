@@ -12,6 +12,13 @@ The key features of this tool are:
 By default, this will deploy an AKS cluster comprising 1 coordinator, 3 executor nodes (with the ability to scale up to 5), and 3 zookeeper nodes, where the instance types are Standard_D8_v4, Standard_D8_v4 and Standard_D2_v2 respectively - instance types can be changed by updating the variables.tf file in this directory. The quantities of nodes can be changed by setting COORDINATOR_NODES, EXECUTOR_NODES, ZOOKEEPER_NODES respectively variables inside dremio.conf.
 
 <img src="images/ADAKS.drawio.png" width="800" height="500"/>
+
+Key components of this architecture are:
+- Users will be able to log into Dremio using Azure SSO
+- Dremio will be deployed into a subnet, with the option for administrators to provide a specific IP Range.
+- Dremio will use an Enterprise Application Service Principal to authenticate users access to Dremio
+- Dremio will use the same Service Principal to provide access to distributed storage for storing reflections.
+
 ## Pre-requisite
 
 - Azure Subscription with owner privileges
@@ -79,7 +86,7 @@ This script has flexible configuration, that is, it allows system administrators
 | TF_STORAGE_ACCOUNT 	| Name of the storage account that was created in [Pre-Requisite](#pre-requisite)	| Yes 	|
 | ENV_PREFIX 	| Prefix for the Dremio deployment. This will be the prefix given to all resources deployed inside your Azure subscription associated with Dremio.	| No 	|
 | DREMIO_STORAGE_ACCOUNT 	| Name of the storage account for Dremio distributed storage (default value is dremiostorageaccount)	| No 	|
-| AZURE_RESOURCE_GROUP 	| Name of the resource group for Dremio to be deployed within. If this is not set and the {$ENV_PREFIX} variable has been set then it will be deployed into a resource group called <b>{ENVIRONMENT_PREFIX}_rg</b>, if not then it will be called <b>DREMIO_PROD_rg</b>. If this value is set and the resource group already exists then Dremio will deploy into this resource group (see [Deploy with exiting infrastructure](#partial-install) for details).	| No 	|
+| AZURE_RESOURCE_GROUP 	| Name of the resource group for Dremio to be deployed within. If this is not set and the {$ENV_PREFIX} variable has been set then it will be deployed into a resource group called <b>{ENV_PREFIX}_rg</b>, if not then it will be called <b>DREMIO_PROD_rg</b>. If this value is set and the resource group already exists then Dremio will deploy into this resource group (see [Deploy with exiting infrastructure](#partial-install) for details).	| No 	|
 | DREMIO_IMG 	| Dremio Docker Image that will be installed this can be dremio/dremio-oss for CE deployments or dremio/dremio-ee for EE deployments. Note EE deployments required Dockerhub access. So you will need to speak to your Account Executive or Solutions Architect to set this up.	(Default value is dremio/dremio-oss)| No 	|
 | DREMIO_VERSION 	| Version of Dremio to be deployed inside your environment (default value is latest).	| No 	|
 
@@ -87,7 +94,7 @@ This script has flexible configuration, that is, it allows system administrators
 4. Deploy Azure Infrastructure and Dremio using ```sh ./deploy_dremio.sh```
 5. Confirm Deployment was successful using ```kubectl get pods```
 6. Check Dremio service is running using ```kubectl get svc``` and confirm it is running on your public IP address or a valid public IP address dependent on if the variable has been set.
-7. Add the PIP to your DNS Zone
+7. Add the PIP to your DNS Zone (refer to [Configure DNS](https://docs.microsoft.com/en-us/azure/dns/tutorial-alias-pip) for details.)
 8. Finally, try to access Dremio using ```http(s)://{HOSTNAME}```.
 
 ##Partial Install
