@@ -2,6 +2,28 @@
 
 source dremio.local.config
 
+# function to create the terraform .tfvars file that will comprise variables used by terraform to deploy Dremio
+function create_tf_vars() {
+  # create empty file or empty existing file if exists
+  echo -n "" > $1
+  echo "aad_group_id=\"$AAD_GROUP_NAME\"" >> $1
+  echo "sp_client_id=\"$AAD_CLIENT_ID\"" >> $1
+  echo "sp_secret=\"$AAD_SECRET\"" >> $1
+  echo "application_name=\"$AAD_APP_NAME\"" >> $1
+  echo "tenant_id=\"$AAD_TENANT_ID\"" >> $1
+  echo "subscription_id=\"$AZURE_SUB_ID\"" >> $1
+  echo "environment_name=\"$ENV_PREFIX\"" >> $1
+  echo "dremio_storage_account=\"$STORAGE_ACCOUNT\"" >> $1
+  # check if SSH_KEY has been provided
+  if [[ $SSH_KEY ]]; then
+    echo "ssh_key=\"$SSH_KEY\"" >> $1
+  fi
+  # check if AZURE_RESOURCE_GROUP has been provided
+  if [[ $AZURE_RESOURCE_GROUP ]]; then
+    echo "azure_resource_group=\"$AZURE_RESOURCE_GROUP\"" >> $1
+  fi
+}
+
 # create functions for Dremio deployment
 function deploy_dremio_infra {
   # check if terraform has been initialised already
@@ -12,97 +34,130 @@ function deploy_dremio_infra {
     terraform init -input=false -reconfigure
   fi
 
-  # update main.tf file with the storage account details
-  sed -i '' -e "s/dremiotfstorageaccount/$STORAGE_ACCOUNT/g" main.tf
-
-  # deploy cluster with ssh_key using terraform
-  if [[ $SSH_KEY ]]; then
-    echo "Deploying cluster with SSH_KEY"
-    terraform apply -auto-approve \
-    -var "aad_group_id=$AAD_GROUP_NAME" \
-    -var "sp_client_id=$AAD_CLIENT_ID" \
-    -var "sp_secret=$AAD_SECRET" \
-    -var "application_name=$AAD_APP_NAME" \
-    -var "tenant_id=$AAD_TENANT_ID" \
-    -var "subscription_id=$AZURE_SUB_ID" \
-    -var "ssh_key=$SSH_KEY"
-  else
-    echo "Deploying cluster without SSH_KEY"
-    terraform apply -auto-approve \
-    -var "aad_group_id=$AAD_GROUP_NAME" \
-    -var "sp_client_id=$AAD_CLIENT_ID" \
-    -var "sp_secret=$AAD_SECRET" \
-    -var "application_name=$AAD_APP_NAME" \
-    -var "tenant_id=$AAD_TENANT_ID" \
-    -var "subscription_id=$AZURE_SUB_ID"
+  # check if user has provided their own storage account name
+  if [[ $TF_STORAGE_ACCOUNT ]]; then
+    # update main.tf file with the storage account details
+    sed -i '' -e "s/dremiotfstorageaccount/$TF_STORAGE_ACCOUNT/g" main.tf
   fi
+
+  #create tfvars file
+  VAR_FILE="dremio_test.tfvars"
+  create_tf_vars "$VAR_FILE"
+
+  # check if user has provided their own resource group
+  # if so import this resource into terraform and add a protected flag
+  if [ $AZURE_RESOURCE_GROUP ] && [ $(az group exists --name $AZURE_RESOURCE_GROUP) = true ]; then
+    # check if azure resource already exists, if so import resource into Terraform
+    # set protected value in VAR_FILE
+    echo "protected_rg=true" >> $VAR_FILE
+    terraform import -var-file="$VAR_FILE" module.configure_resource_group.azurerm_resource_group.DREMIO_rg "/subscriptions/$AZURE_SUB_ID/resourceGroups/$AZURE_RESOURCE_GROUP"
+  fi
+
+  # deploy cluster
+  terraform apply -auto-approve -var-file="$VAR_FILE"
 
   # get terraform outputs to configure dremio
   export CLUSTER_NAME=$(terraform output -raw aks_cluster_name )
-  export AKS_RESOURCE_GROUP=$(terraform output -raw dremio_resource_group )
+  export AZURE_RESOURCE_GROUP=$(terraform output -raw dremio_resource_group )
   export NODE_RESOURCE_GROUP=$(terraform output -raw aks_node_pool_rg )
   export PIP_IP_ADDRESS=$(terraform output -raw dremio_static_ip)
   export STORAGE_ACCOUNT=$(terraform output -raw dremio_storage_account)
   export DREMIO_CONTAINER=$(terraform output -raw dremio_container)
 }
 
+function destroy_dremio_infra {
+  #create tfvars file
+  VAR_FILE="dremio_test.tfvars"
+  create_tf_vars "$VAR_FILE"
+  PROTECTED=False
+  if [ $(az tag list --resource-id "/subscriptions/$AZURE_SUB_ID/resourceGroups/$AZURE_RESOURCE_GROUP" --query "properties.tags.Protected") ]; then
+    # remove resource from config to protect the resource group
+    terraform state rm module.configure_resource_group.azurerm_resource_group.DREMIO_rg
+  fi
+  # destroy provisioned resources for Dremio
+  terraform destroy -auto-approve -var-file="$VAR_FILE"
+}
+
 function deploy_dremio {
+  # check if version is set, if not default to CE version and skip Azure AD integration
+  if [[ -n $DREMIO_IMG ]]; then
+    # check is azure ad config has been added, if so then skip this step
+    if [[ $(tail -n 1 $DREMIO_CONF/dremio_v2/config/dremio.conf) != "services.coordinator.web.auth.config: \"azuread.json\"" ]]; then
+      # add azuread config to dremio.conf
+      echo 'services.coordinator.web.auth.type: "azuread"' >> $DREMIO_CONF/dremio_v2/config/dremio.conf
+      echo 'services.coordinator.web.auth.config: "azuread.json"' >> $DREMIO_CONF/dremio_v2/config/dremio.conf
+    fi
+    # create azuread.json - required for Azure AD SSO
+    python create_dremio_config.py azuread $AAD_CLIENT_ID $AAD_SECRET $REDIRECT_URL $AAD_TENANT_ID $DREMIO_CONF/dremio_v2
+  fi
   # create core-site.xml
   python create_dremio_config.py core-site $STORAGE_ACCOUNT $AAD_CLIENT_ID $AAD_SECRET $AAD_TENANT_ID $DREMIO_CONF/dremio_v2
-  # create azuread.json - required for Azure AD SSO
-  python create_dremio_config.py azuread $AAD_CLIENT_ID $AAD_SECRET $REDIRECT_URL $AAD_TENANT_ID $DREMIO_CONF/dremio_v2
+
   # check dremio resources are set if not set them
-  exec_mem=${EXECUTOR_MEMORY:='4096'}
-  exec_cpu=${EXECUTOR_CPU:='2'}
-  coord_mem=${COORDINATOR_MEMORY:='4096'}
-  coord_cpu=${COORDINATOR_CPU:='2'}
-  zook_mem=${ZOOKEEPER_MEMORY:='1024'}
-  zook_cpu=${ZOOKEEPER_CPU:='0.5'}
+  EXECUTOR_MEMORY=${EXECUTOR_MEMORY:='4096'}
+  EXECUTOR_CPU=${EXECUTOR_CPU:='2'}
+  EXECUTOR_NODES=${EXECUTOR_NODES:='3'}
+  COORDINATOR_MEMORY=${COORDINATOR_MEMORY:='4096'}
+  COORDINATOR_CPU=${COORDINATOR_CPU:='2'}
+  COORDINATOR_NODES=${COORDINATOR_NODES:='1'}
+  ZOOKEEPER_MEMORY=${ZOOKEEPER_MEMORY:='1024'}
+  ZOOKEEPER_CPU=${ZOOKEEPER_CPU:='0.5'}
+  ZOOKEEPER_NODES=${ZOOKEEPER_NODES:='3'}
+
+  # set docker defaults for dremio
+  DREMIO_VERSION=${DREMIO_VERSION:='latest'}
+  DREMIO_IMG=${DREMIO_IMG:='dremio/dremio-oss'}
+
   # deploy dremio
   helm install "dremio" $DREMIO_CONF/dremio_v2 -f $DREMIO_CONF/dremio_v2/values.yaml \
   --set service.loadBalancerIP=$PIP_IP_ADDRESS \
-  --set executor.memory=$exec_mem \
-  --set executor.cpu=$exec_cpu \
+  --set executor.memory=$EXECUTOR_MEMORY \
+  --set executor.cpu=$EXECUTOR_CPU \
   --set executor.nodeSelector.agentpool="executorpool" \
   --set coordinator.nodeSelector.agentpool="coordpool" \
   --set coordinator.web.port=443 \
   --set coordinator.web.tls.enabled="true" \
   --set coordinator.web.tls.secret=$DOCKER_TLS_CERT_SECRET_NAME \
-  --set coordinator.memory=$coord_mem \
-  --set coordinator.cpu=$coord_cpu \
-  --set zookeeper.memory=$zook_mem \
-  --set zookeeper.cpu=$zook_cpu \
+  --set coordinator.memory=$COORDINATOR_MEMORY \
+  --set coordinator.cpu=$COORDINATOR_CPU \
+  --set zookeeper.memory=$ZOOKEEPER_MEMORY \
+  --set zookeeper.cpu=$ZOOKEEPER_CPU \
   --set zookeeper.nodeSelector.agentpool="default" \
-  --set service.annotations."service\.beta\.kubernetes\.io\/azure-load-balancer-resource-group"=$AKS_RESOURCE_GROUP \
-  --set image="dremio/dremio-ee" \
-  --set imageTag="19.2.0" \
+  --set service.annotations."service\.beta\.kubernetes\.io\/azure-load-balancer-resource-group"=$AZURE_RESOURCE_GROUP \
+  --set image="$DREMIO_IMG" \
+  --set imageTag="$DREMIO_VERSION" \
   --set imagePullSecrets.name="$DOCKER_SECRET_NAME" \
   --set distStorage.type="azureStorage" \
   --set distStorage.azureStorage.filesystem=$DREMIO_CONTAINER \
   --set distStorage.azureStorage.path="/"
 }
 
-# check service principal
-if [[ "$AZURE_SP" = true ]]; then
-  echo "Logging in with Service Principal"
-  # service principal is not supported by terraform for azure backend so we need to define it using ARM see https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/guides/service_principal_client_secret#configuring-the-service-principal-in-terraform for details
-  export ARM_CLIENT_ID=$AAD_CLIENT_ID
-  export ARM_CLIENT_SECRET=$AAD_SECRET
-  export ARM_SUBSCRIPTION_ID=$AZURE_SUB_ID
-  export ARM_TENANT_ID=$AAD_TENANT_ID
-  # login with service principal
-  az login --service-principal -u $AAD_CLIENT_ID -p $AAD_SECRET --tenant $AAD_TENANT_ID
-else
-  # otherwise login with user
-  echo "Logging in with User"
-  az login && az account set -s $AZURE_SUB_ID
+# check user logged in, this code will return the username of the user already logged in
+RES=$(az ad signed-in-user show --query userPrincipalName -o tsv)
+if [[ $RES = "" ]]; then
+  # check service principal
+  if [[ "$AZURE_SP" = true ]]; then
+    echo "Logging in with Service Principal"
+    # service principal is not supported by terraform for azure backend so we need to define it using ARM see https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/guides/service_principal_client_secret#configuring-the-service-principal-in-terraform for details
+    export ARM_CLIENT_ID=$AAD_CLIENT_ID
+    export ARM_CLIENT_SECRET=$AAD_SECRET
+    export ARM_SUBSCRIPTION_ID=$AZURE_SUB_ID
+    export ARM_TENANT_ID=$AAD_TENANT_ID
+    # login with service principal
+    az login --service-principal -u $AAD_CLIENT_ID -p $AAD_SECRET --tenant $AAD_TENANT_ID
+  else
+    # otherwise login with user
+    echo "Logging in with User"
+    az login && az account set -s $AZURE_SUB_ID
+  fi
 fi
 
-echo "Do you wish to deploy Dremio Infrastructure?"
-select yn in "Yes" "No"; do
+echo "What do you want to do?"
+select yn in "Deploy" "Destroy" "Continue"; do
     case $yn in
-        Yes ) deploy_dremio_infra; break;;
-        No ) exit;;
+        Deploy ) deploy_dremio_infra; break;;
+        Destroy ) destroy_dremio_infra; exit;;
+        Continue ) break;;
     esac
 done
 
@@ -113,14 +168,17 @@ if [[ -z $CLUSTER_NAME ]]; then
 fi
 
 # get cluster credentials for kubectl
-az aks get-credentials --name $CLUSTER_NAME --resource-group $AKS_RESOURCE_GROUP --overwrite-existing
+az aks get-credentials --name $CLUSTER_NAME --resource-group $AZURE_RESOURCE_GROUP --overwrite-existing
 
-# create secret for ee version
-if [[ -n $DOCKER_USER ]]; then
-  # create env variables for docker secret if required for Dremio EE
-  export DOCKER_SECRET_NAME="dremio-docker-secret"
-  kubectl create secret docker-registry "${DOCKER_SECRET_NAME}" --docker-username=$DOCKER_USER  --docker-password=$DOCKER_PASSWD --docker-email=$DOCKER_EMAIL
-fi
+# add validation to check is docker image is CE or EE
+  if [[ $DREMIO_IMG == 'dremio/dremio-ee' ]]; then
+    # create secret for ee version
+    if [[ -n $DOCKER_USER ]]; then
+      # create env variables for docker secret if required for Dremio EE
+      export DOCKER_SECRET_NAME="dremio-docker-secret"
+      kubectl create secret docker-registry "${DOCKER_SECRET_NAME}" --docker-username=$DOCKER_USER  --docker-password=$DOCKER_PASSWD --docker-email=$DOCKER_EMAIL
+    fi
+  fi
 
 # create secret for tls if required
 if [[ -n $TLS_PRIVATE_KEY_PATH ]]; then

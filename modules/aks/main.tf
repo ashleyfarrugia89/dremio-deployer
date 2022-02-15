@@ -14,6 +14,8 @@ terraform {
 
 # create log analytics
 resource "azurerm_log_analytics_workspace" "workspace" {
+  #create workspace when log analytics is enabled
+  count               = var.log_analytics? 1: 0
   name                = "dremio-law"
   resource_group_name = var.resource_group
   location            = var.region
@@ -21,9 +23,11 @@ resource "azurerm_log_analytics_workspace" "workspace" {
 }
 
 resource "azurerm_log_analytics_solution" "workspace" {
+  #create solution when log analytics is enabled
+  count               = var.log_analytics? 1: 0
   solution_name         = "Containers"
-  workspace_resource_id = azurerm_log_analytics_workspace.workspace.id
-  workspace_name        = azurerm_log_analytics_workspace.workspace.name
+  workspace_resource_id = azurerm_log_analytics_workspace.workspace.0.id
+  workspace_name        = azurerm_log_analytics_workspace.workspace.0.name
   location              = var.region
   resource_group_name   = var.resource_group
 
@@ -43,6 +47,7 @@ resource "azurerm_kubernetes_cluster" "Dremio_AKS_Cluster" {
     client_id     = var.sp_client_id
     client_secret = var.sp_secret
   }
+  # default node pool is used by zookeeper nodes
   default_node_pool {
     name       = "default"
     vm_size    = var.default_instance_name
@@ -69,9 +74,13 @@ resource "azurerm_kubernetes_cluster" "Dremio_AKS_Cluster" {
     http_application_routing {
       enabled = false
     }
-    oms_agent {
-      enabled                    = true
-      log_analytics_workspace_id = azurerm_log_analytics_workspace.workspace.id
+    # add oms_agent when log analytics is enabled
+    dynamic oms_agent {
+      for_each                     = var.log_analytics? [1]: []
+      content {
+        enabled                    = true
+        log_analytics_workspace_id = azurerm_log_analytics_workspace.workspace.0.id
+      }
     }
   }
 }

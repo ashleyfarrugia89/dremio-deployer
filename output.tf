@@ -16,12 +16,6 @@ output "client_certificate" {
   sensitive = true
 }
 
-output "kube_config" {
-  value = module.deploy_dremio_aks.kube_config
-
-  sensitive = true
-}
-
 output "client_key" {
   value = module.deploy_dremio_aks.client_key
 
@@ -48,7 +42,7 @@ output "host" {
 }
 
 output "dremio_resource_group"{
-  value = azurerm_resource_group.DREMIO_rg.name
+  value = module.configure_resource_group.dremio_resource_group.name
 }
 
 output "dremio_static_ip"{

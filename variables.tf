@@ -46,3 +46,12 @@ variable "sp_secret" {}
 variable "application_name" {}
 variable "tenant_id" {}
 variable "subscription_id" {}
+variable "dremio_storage_account" {
+  default = "dremiostorageaccount"
+}
+variable "azure_resource_group" {
+  default = ""
+}
+variable "protected_rg"{
+  default = false
+}

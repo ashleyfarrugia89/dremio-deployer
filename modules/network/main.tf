@@ -8,8 +8,6 @@ terraform {
   required_version = ">=0.14.9"
 }
 
-data "azuread_client_config" "current" {}
-
 resource "azurerm_virtual_network" "DREMIO_vnet" {
   address_space       = [var.subnet_address_space]
   location            = var.region

@@ -14,3 +14,6 @@ variable "subnet" {}
 variable "pip_resource_group" {}
 variable "sp_client_id" {}
 variable "sp_secret" {}
+variable "log_analytics"{
+  default = false
+}
