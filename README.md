@@ -90,12 +90,13 @@ This script has flexible configuration, that is, it allows system administrators
 | DREMIO_IMG 	| Dremio Docker Image that will be installed this can be dremio/dremio-oss for CE deployments or dremio/dremio-ee for EE deployments. Note EE deployments required Dockerhub access. So you will need to speak to your Account Executive or Solutions Architect to set this up.	(Default value is dremio/dremio-oss)| No 	|
 | DREMIO_VERSION 	| Version of Dremio to be deployed inside your environment (default value is latest).	| No 	|
 
-3. Create Enterprise Application in Azure and ensure that the Redirect URL of your App Registration matches the config property ```REDIRECT_URL``` inside dremio.config.
-4. Deploy Azure Infrastructure and Dremio using ```sh ./deploy_dremio.sh```
-5. Confirm Deployment was successful using ```kubectl get pods```
-6. Check Dremio service is running using ```kubectl get svc``` and confirm it is running on your public IP address or a valid public IP address dependent on if the variable has been set.
-7. Add the PIP to your DNS Zone (refer to [Configure DNS](https://docs.microsoft.com/en-us/azure/dns/tutorial-alias-pip) for details.)
-8. Finally, try to access Dremio using ```http(s)://{HOSTNAME}```.
+3. Create Enterprise Application in Azure and ensure that the Redirect URL of your App Registration matches the config property ```REDIRECT_URL``` inside dremio.config (see [#set-up-redirect-url](RedirectURL) for details on setting this up.)
+4. Assign ```Network Contributor``` role to your Enterprise Application at the Subscription level.
+5. Deploy Azure Infrastructure and Dremio using ```sh ./deploy_dremio.sh```
+6. Confirm Deployment was successful using ```kubectl get pods```
+7. Check Dremio service is running using ```kubectl get svc``` and confirm it is running on your public IP address or a valid public IP address dependent on if the variable has been set.
+8. Add the PIP to your DNS Zone (refer to [Configure DNS](https://docs.microsoft.com/en-us/azure/dns/tutorial-alias-pip) for details.)
+9. Finally, try to access Dremio using ```http(s)://{HOSTNAME}```.
 
 ## Partial Install
 
