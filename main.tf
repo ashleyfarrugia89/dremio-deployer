@@ -18,6 +18,13 @@ provider "azurerm" {
   features {}
 }
 
+locals {
+  project_tags = merge(var.tags, {
+    Environment = var.environment_name,
+    Owner = "ashley.farrugia@dremio.com"
+  })
+}
+
 # import application principal https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/data-sources/service_principal
 data "azuread_service_principal" "DREMIO_sp" {
   display_name = var.application_name
@@ -27,17 +34,9 @@ data "azuread_service_principal" "DREMIO_sp" {
 module "configure_resource_group" {
   source = "./modules/rg/"
   environment_name = var.environment_name
-  tags             = var.tags
+  tags             = local.project_tags
   protected     = var.protected_rg
 }
-
-##create azure resource group
-#resource "azurerm_resource_group" "DREMIO_rg" {
-#  # added create resource only when a resource group name is not provided
-#  name     = var.azure_resource_group != "" ? var.azure_resource_group : "${var.environment_name}_rg"
-#  location = var.region
-#  #tags     = merge(var.tags, local.resource_group_tags)
-#}
 
 # create azure vnet
 module "deploy_network" {
@@ -48,7 +47,7 @@ module "deploy_network" {
   environment_name     = var.environment_name
   subnet_address_space = var.subnet_address_space
   region               = var.region
-  tags                 = var.tags
+  tags                 = local.project_tags
   enterprise_app       = data.azuread_service_principal.DREMIO_sp
   depends_on           = [module.configure_resource_group]
 }
@@ -58,7 +57,7 @@ module "deploy_distributed_storage" {
   source               = "./modules/storage"
   resource_group       = module.configure_resource_group.dremio_resource_group
   storage_account_tier = var.storage_account_tier
-  tags                 = var.tags
+  tags                 = local.project_tags
   storage_account_name = var.dremio_storage_account
   aad_group_id         = var.aad_group_id
   enterprise_app       = data.azuread_service_principal.DREMIO_sp
@@ -70,7 +69,7 @@ module "deploy_dremio_aks" {
   source                = "./modules/aks"
   region                = var.region
   resource_group        = module.configure_resource_group.dremio_resource_group.name
-  tags                  = var.tags
+  tags                  = local.project_tags
   cluster_prefix        = var.environment_name
   admin_username        = var.admin_username
   subnet                = module.deploy_network.subnet_id

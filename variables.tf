@@ -5,7 +5,7 @@ variable "region" {
 variable "tags" {
   type = map(string)
   default = {
-    Environment = "Field Engineering Test"
+    Environment = "Field Engineering Cluster"
     Owner = "ashley.farrugia@dremio.com"
   }
 }
@@ -24,11 +24,11 @@ variable "default_instance_type" {
 }
 variable "exec_instance_type" {
   type        = string
-  default     = "Standard_D8_v4"
+  default     = "Standard_E16_v3"
 }
 variable "coor_instance_type" {
   type        = string
-  default     = "Standard_D8_v4"
+  default     = "Standard_E16_v3"
 }
 variable "storage_account_tier"{
   type        = string
