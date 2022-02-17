@@ -55,7 +55,9 @@ The setup for Dremio can be performed using <b>User</b> who has <i>Owner</i> per
 This script has flexible configuration, that is, it allows system administrators to interact with it at any stage of the process for deploying Dremio. The setup guide below is for a full deployment, if you want to deploy Dremio inside your own Azure Infrastructure then please see [Deploy with exiting infrastructure](#partial-install) for details.
 <br/>
 1. Assign ```Storage Blob Data Owner``` to your User on the Storage account created in [Pre-requisite](#pre-requisite), alternatively if you are using an Enterprise Application then you will need to assign it this.
-2. Create a copy of dremio.config and rename it as dremio.local.config, and populate it with relevant values for the following variables.
+2. Create Enterprise Application in Azure and ensure that the Redirect URL of your App Registration matches the config property ```REDIRECT_URL``` inside dremio.config (see [#set-up-redirect-url](RedirectURL) for details on setting this up.)
+3. Assign ```Network Contributor``` role to your Enterprise Application at the Subscription level.
+4. Create a copy of dremio.config and rename it as dremio.local.config, and populate it with relevant values for the following variables.
 
 | Variable  	| Description  | Required 	|
 |---	|:---	|	---|
@@ -90,8 +92,6 @@ This script has flexible configuration, that is, it allows system administrators
 | DREMIO_IMG 	| Dremio Docker Image that will be installed this can be dremio/dremio-oss for CE deployments or dremio/dremio-ee for EE deployments. Note EE deployments required Dockerhub access. So you will need to speak to your Account Executive or Solutions Architect to set this up.	(Default value is dremio/dremio-oss)| No 	|
 | DREMIO_VERSION 	| Version of Dremio to be deployed inside your environment (default value is latest).	| No 	|
 
-3. Create Enterprise Application in Azure and ensure that the Redirect URL of your App Registration matches the config property ```REDIRECT_URL``` inside dremio.config (see [#set-up-redirect-url](RedirectURL) for details on setting this up.)
-4. Assign ```Network Contributor``` role to your Enterprise Application at the Subscription level.
 5. Deploy Azure Infrastructure and Dremio using ```sh ./deploy_dremio.sh```
 6. Confirm Deployment was successful using ```kubectl get pods```
 7. Check Dremio service is running using ```kubectl get svc``` and confirm it is running on your public IP address or a valid public IP address dependent on if the variable has been set.
