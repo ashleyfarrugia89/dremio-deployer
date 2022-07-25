@@ -2,6 +2,7 @@ import xml.etree.ElementTree as ET
 import sys
 from xml.dom import minidom
 import json
+import yaml
 
 def build_config_xml(storage_account, client_id, secret, tenant_id, path):
     root = ET.Element('configuration')
@@ -74,6 +75,48 @@ def build_azuread(client_id, secret, redirect_url, tenant_id, path):
     with open(full_path, 'w') as f:
         f.write(json.dumps(config, indent=4, sort_keys=True))
 
+def load_yaml(conf_file):
+    try:
+        with open(conf_file) as f:
+            config = yaml.safe_load(f)
+    except Exception as e:
+        print(e)
+    finally:
+        return config
+
+def write_yaml(config_file, conf):
+    try:
+        with open(config_file, 'wb') as f:
+            yaml.dump(conf, f, encoding="utf-8")
+    except Exception as e:
+        print(e)
+
+def recursive_update(doc, prop, value, m , depth):
+    if prop not in doc:
+        doc[a] = {}
+    tmp = doc[a]
+    if m == depth:
+        tmp = value
+        return tmp
+    return recursive_update(tmp, prop, value, m+1, depth)
+
+def update_yaml_props(doc, props):
+    for prop in props:
+        k,v = prop.split("=")
+        tmp = k.split(".")
+        if len(tmp) == 1:
+            doc[k] = v
+        else:
+            pass
+    print(doc)
+    return doc
+
+def set_executor_props(docs, *args):
+    executor = docs['executor']
+    props = args[0]
+    return update_yaml_props(executor, props)
+
+
 if __name__ == "__main__":
     args = sys.argv
     if args[1] == "core-site":
@@ -82,6 +125,11 @@ if __name__ == "__main__":
     elif args[1] == "azuread":
         client_id, secret, redirect_url, tenant_id, path = args[2:]
         build_azuread(client_id, secret, redirect_url, tenant_id, path)
+    elif args[1] == "dremio_conf":
+        data = load_yaml(args[2])
+        # perform manipulation
+        a = set_executor_props(data, args[3:])
+        # save update config
     else:
         print("""
         Usage:

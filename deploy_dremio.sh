@@ -54,7 +54,7 @@ function deploy_dremio_infra {
   fi
 
   # deploy cluster
-  terraform apply -auto-approve -var-file="$VAR_FILE"
+  terraform apply -var-file="$VAR_FILE"
 
   # get terraform outputs to configure dremio
   export CLUSTER_NAME=$(terraform output -raw aks_cluster_name )
@@ -78,28 +78,77 @@ function destroy_dremio_infra {
   terraform destroy -auto-approve -var-file="$VAR_FILE"
 }
 
-function deploy_dremio {
-  # check if version is set, if not default to CE version and skip Azure AD integration
-  if [[ -n $DREMIO_IMG ]]; then
-    # check is azure ad config has been added, if so then skip this step
-    if [[ $(tail -n 1 $DREMIO_CONF/dremio_v2/config/dremio.conf) != "services.coordinator.web.auth.config: \"azuread.json\"" ]]; then
-      # add azuread config to dremio.conf
-      echo 'services.coordinator.web.auth.type: "azuread"' >> $DREMIO_CONF/dremio_v2/config/dremio.conf
-      echo 'services.coordinator.web.auth.config: "azuread.json"' >> $DREMIO_CONF/dremio_v2/config/dremio.conf
-    fi
-    # create azuread.json - required for Azure AD SSO
-    python create_dremio_config.py azuread $AAD_CLIENT_ID $AAD_SECRET $REDIRECT_URL $AAD_TENANT_ID $DREMIO_CONF/dremio_v2
+# function to create authentication config for dremio
+# variables:
+# $1 - authentication type
+# $2 - authentication file
+function create_or_update_auth_conf() {
+  # if auth conf exists update
+  if [[ $(tail -n 1 $DREMIO_CONF/dremio_v2/config/dremio.conf) == services.coordinator.web.auth.config*  ]]; then
+    # update
+    sed -i '' -e "s/services.coordinator.web.auth.type.*/services.coordinator.web.auth.type:\ \"$1\"/" $DREMIO_CONF/dremio_v2/config/dremio.conf
+    sed -i '' -e "s/services.coordinator.web.auth.config.*/services.coordinator.web.auth.config:\ \"$2\"/" $DREMIO_CONF/dremio_v2/config/dremio.conf
+  # otherwise, create it
+  else
+    # create config
+    # add azuread config to dremio.conf
+    echo "" >> $DREMIO_CONF/dremio_v2/config/dremio.conf
+    echo "services.coordinator.web.auth.type: \"$1\"" >> $DREMIO_CONF/dremio_v2/config/dremio.conf
+    echo "services.coordinator.web.auth.config: \"$2\"" >> $DREMIO_CONF/dremio_v2/config/dremio.conf
   fi
-  # create core-site.xml
-  python create_dremio_config.py core-site $STORAGE_ACCOUNT $AAD_CLIENT_ID $AAD_SECRET $AAD_TENANT_ID $DREMIO_CONF/dremio_v2
+}
 
+function create_helm_chart() {
+  # download and unzip dremio helm chart
+  curl -LO  https://github.com/dremio/dremio-cloud-tools/archive/refs/heads/master.zip && unzip master.zip
+  # set HELM_DIR for later
+  tmp=$(pwd)
+  DREMIO_CONF="$tmp/dremio-cloud-tools-master/charts/"
+  # check if version is set, if not default to CE version and skip Azure AD integration
+  if [[ -n $DREMIO_IMG ]] && [[ ($DREMIO_IMG == *"ee"*) || ($DREMIO_IMG == *"EE"*) ]]; then
+    if [[ $AUTH_TYPE == 'aad' ]]; then
+      # check is azure ad config has been added, if so then skip this step
+      if [[ $(tail -n 1 $DREMIO_CONF/dremio_v2/config/dremio.conf) != "services.coordinator.web.auth.config: \"azuread.json\"" ]]; then
+        create_or_update_auth_conf "azuread" "azuread.json"
+      fi
+      # create azuread.json - required for Azure AD SSO
+      python create_dremio_config.py azuread $AAD_CLIENT_ID $AAD_SECRET $REDIRECT_URL $AAD_TENANT_ID $HELM_DIR
+    elif [[ $AUTH_TYPE == 'ldap' ]]; then
+      create_or_update_auth_conf "ldap" "ad.json"
+    fi
+    # create core-site.xml
+    python create_dremio_config.py core-site $STORAGE_ACCOUNT $AAD_CLIENT_ID $AAD_SECRET $AAD_TENANT_ID $DREMIO_CONF/dremio_v2
+  fi
   # check dremio resources are set if not set them
   EXECUTOR_MEMORY=${EXECUTOR_MEMORY:='4096'}
   EXECUTOR_CPU=${EXECUTOR_CPU:='2'}
   EXECUTOR_NODES=${EXECUTOR_NODES:='3'}
   COORDINATOR_MEMORY=${COORDINATOR_MEMORY:='4096'}
   COORDINATOR_CPU=${COORDINATOR_CPU:='2'}
-  COORDINATOR_NODES=${COORDINATOR_NODES:='1'}
+  COORDINATOR_NODES=${COORDINATOR_NODES:='0'}
+  ZOOKEEPER_MEMORY=${ZOOKEEPER_MEMORY:='1024'}
+  ZOOKEEPER_CPU=${ZOOKEEPER_CPU:='0.5'}
+  ZOOKEEPER_NODES=${ZOOKEEPER_NODES:='3'}
+  # set docker defaults for dremio
+  DREMIO_VERSION=${DREMIO_VERSION:='latest'}
+  DREMIO_IMG=${DREMIO_IMG:='dremio/dremio-oss'}
+
+  # update values.yaml configuration files
+  sed -i '' -e "s/\#loadBalancerIP: 0.0.0.0/loadBalancerIP: $IP_ADDRESS/" $DREMIO_CONF/dremio_v2/values.yaml
+  sed -i '' -e "s///" $DREMIO_CONF/dremio_v2/values.yaml
+ }
+
+function deploy_dremio {
+
+  # create core-site.xml
+  #python create_dremio_config.py core-site $STORAGE_ACCOUNT $AAD_CLIENT_ID $AAD_SECRET $AAD_TENANT_ID $DREMIO_CONF/dremio_v2
+  # check dremio resources are set if not set them
+  EXECUTOR_MEMORY=${EXECUTOR_MEMORY:='4096'}
+  EXECUTOR_CPU=${EXECUTOR_CPU:='2'}
+  EXECUTOR_NODES=${EXECUTOR_NODES:='3'}
+  COORDINATOR_MEMORY=${COORDINATOR_MEMORY:='4096'}
+  COORDINATOR_CPU=${COORDINATOR_CPU:='2'}
+  COORDINATOR_NODES=${COORDINATOR_NODES:='0'}
   ZOOKEEPER_MEMORY=${ZOOKEEPER_MEMORY:='1024'}
   ZOOKEEPER_CPU=${ZOOKEEPER_CPU:='0.5'}
   ZOOKEEPER_NODES=${ZOOKEEPER_NODES:='3'}
@@ -109,19 +158,23 @@ function deploy_dremio {
   DREMIO_IMG=${DREMIO_IMG:='dremio/dremio-oss'}
 
   # deploy dremio
-  helm install "dremio" $DREMIO_CONF/dremio_v2 -f $DREMIO_CONF/dremio_v2/values.yaml \
+  helm upgrade "dremio" $DREMIO_CONF/dremio_v2 -f $DREMIO_CONF/dremio_v2/values.yaml \
   --set service.loadBalancerIP=$PIP_IP_ADDRESS \
   --set executor.memory=$EXECUTOR_MEMORY \
   --set executor.cpu=$EXECUTOR_CPU \
+  --set executor.count=$EXECUTOR_NODES \
   --set executor.nodeSelector.agentpool="executorpool" \
+  --set executor.volumeSize="256Gi" \
   --set coordinator.nodeSelector.agentpool="coordpool" \
   --set coordinator.web.port=443 \
   --set coordinator.web.tls.enabled="true" \
   --set coordinator.web.tls.secret=$DOCKER_TLS_CERT_SECRET_NAME \
   --set coordinator.memory=$COORDINATOR_MEMORY \
   --set coordinator.cpu=$COORDINATOR_CPU \
+  --set coordinator.count=$COORDINATOR_NODES \
   --set zookeeper.memory=$ZOOKEEPER_MEMORY \
   --set zookeeper.cpu=$ZOOKEEPER_CPU \
+  --set zookeeper.count=$ZOOKEEPER_NODES \
   --set zookeeper.nodeSelector.agentpool="default" \
   --set service.annotations."service\.beta\.kubernetes\.io\/azure-load-balancer-resource-group"=$AZURE_RESOURCE_GROUP \
   --set image="$DREMIO_IMG" \
@@ -171,14 +224,14 @@ fi
 az aks get-credentials --name $CLUSTER_NAME --resource-group $AZURE_RESOURCE_GROUP --overwrite-existing
 
 # add validation to check is docker image is CE or EE
-  if [[ $DREMIO_IMG == 'dremio/dremio-ee' ]]; then
-    # create secret for ee version
-    if [[ -n $DOCKER_USER ]]; then
-      # create env variables for docker secret if required for Dremio EE
-      export DOCKER_SECRET_NAME="dremio-docker-secret"
-      kubectl create secret docker-registry "${DOCKER_SECRET_NAME}" --docker-username=$DOCKER_USER  --docker-password=$DOCKER_PASSWD --docker-email=$DOCKER_EMAIL
-    fi
+if [[ $DREMIO_IMG == 'dremio/dremio-ee' ]]; then
+  # create secret for ee version
+  if [[ -n $DOCKER_USER ]]; then
+    # create env variables for docker secret if required for Dremio EE
+    export DOCKER_SECRET_NAME="dremio-docker-secret"
+    kubectl create secret docker-registry "${DOCKER_SECRET_NAME}" --docker-username=$DOCKER_USER  --docker-password=$DOCKER_PASSWD --docker-email=$DOCKER_EMAIL
   fi
+fi
 
 # create secret for tls if required
 if [[ -n $TLS_PRIVATE_KEY_PATH ]]; then
@@ -193,10 +246,18 @@ az role assignment create \
 	--role "Network Contributor" \
 	--scope /subscriptions/$AZURE_SUB_ID/resourceGroups/$NODE_RESOURCE_GROUP
 
-echo "Do you wish to deploy Dremio?"
+echo "Do you wish to build helm chart?"
 select yn in "Yes" "No"; do
     case $yn in
-        Yes ) deploy_dremio; break;;
+        Yes ) create_helm_chart; break;;
         No ) exit;;
     esac
 done
+
+#echo "Do you wish to deploy Dremio?"
+#select yn in "Yes" "No"; do
+#    case $yn in
+#        Yes ) deploy_dremio; break;;
+#        No ) exit;;
+#    esac
+#done
